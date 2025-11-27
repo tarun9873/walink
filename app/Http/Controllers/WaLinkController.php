@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WaLink;
+use App\Models\WaLinkClick;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -175,13 +176,15 @@ class WaLinkController extends Controller
     public function redirect($slug)
     {
         try {
-            // Optionally cache the lookup: Cache::remember("wa_link:{$slug}", 60, fn() => WaLink::where('slug',$slug)->first());
             $link = WaLink::where('slug', $slug)->first();
 
             if (!$link || ! $link->is_active) {
                 Log::info("Missing or inactive link visited: {$slug}", ['ip' => request()->ip()]);
                 return redirect()->route('wa-links.notfound');
             }
+
+            // Track the click with detailed analytics
+            $this->trackClick($link);
 
             // increment clicks (atomic)
             $link->increment('clicks');
@@ -191,5 +194,170 @@ class WaLinkController extends Controller
             Log::error("Error redirecting slug {$slug}: ".$e->getMessage(), ['slug'=>$slug,'ip'=>request()->ip()]);
             return redirect()->route('wa-links.notfound');
         }
+    }
+
+    /**
+     * Show analytics for a specific WhatsApp link
+     */
+    public function analytics($id)
+    {
+        $waLink = WaLink::findOrFail($id);
+        
+           // Check if user owns this link (manual check without policy)
+    if (auth()->id() !== $waLink->user_id) {
+        abort(403, 'Unauthorized action.');
+    }
+        
+        // Check if clicks relationship exists
+        if (!method_exists($waLink, 'clicks')) {
+            // Return empty data if relationship doesn't exist
+            $dailyClicks = collect();
+            $countryClicks = collect();
+            $deviceClicks = collect();
+            $totalClicks = $waLink->clicks;
+            $uniqueVisitors = $waLink->clicks;
+        } else {
+            // Get daily clicks
+            $dailyClicks = $waLink->clicks()
+                ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+                ->groupBy('date')
+                ->orderBy('date', 'DESC')
+                ->get();
+
+            // Get clicks by country
+            $countryClicks = $waLink->clicks()
+                ->selectRaw('country, COUNT(*) as count')
+                ->whereNotNull('country')
+                ->groupBy('country')
+                ->orderBy('count', 'DESC')
+                ->get();
+
+            // Get clicks by device
+            $deviceClicks = $waLink->clicks()
+                ->selectRaw('device_type, COUNT(*) as count')
+                ->whereNotNull('device_type')
+                ->groupBy('device_type')
+                ->orderBy('count', 'DESC')
+                ->get();
+
+            $totalClicks = $waLink->clicks()->count();
+            $uniqueVisitors = $waLink->clicks()->distinct('ip_address')->count('ip_address');
+        }
+
+          return view('wa_links.analytics', compact(
+        'waLink', 
+        'dailyClicks', 
+        'countryClicks', 
+        'deviceClicks',
+        'totalClicks',
+        'uniqueVisitors'
+    ));
+    }
+
+    /**
+     * Track individual click with details
+     */
+    private function trackClick(WaLink $waLink)
+    {
+        try {
+            // Check if WaLinkClick model exists
+            if (!class_exists(WaLinkClick::class)) {
+                return;
+            }
+
+            $agent = $this->getUserAgent();
+            
+            WaLinkClick::create([
+                'wa_link_id' => $waLink->id,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'country' => $this->getCountryFromIP(request()->ip()),
+                'city' => $this->getCityFromIP(request()->ip()),
+                'referrer' => request()->header('referer'),
+                'device_type' => $agent['device_type'],
+                'browser' => $agent['browser'],
+                'platform' => $agent['platform'],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error tracking click: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get user agent details
+     */
+    private function getUserAgent()
+    {
+        $userAgent = request()->userAgent();
+        
+        // Basic device detection
+        $deviceType = 'Desktop';
+        if (preg_match('/(android|webos|iphone|ipad|ipod|blackberry|windows phone)/i', $userAgent)) {
+            $deviceType = 'Mobile';
+        } elseif (preg_match('/(tablet|ipad|playbook|silk)/i', $userAgent)) {
+            $deviceType = 'Tablet';
+        }
+
+        // Basic browser detection
+        $browser = 'Unknown';
+        if (preg_match('/chrome/i', $userAgent)) {
+            $browser = 'Chrome';
+        } elseif (preg_match('/firefox/i', $userAgent)) {
+            $browser = 'Firefox';
+        } elseif (preg_match('/safari/i', $userAgent)) {
+            $browser = 'Safari';
+        } elseif (preg_match('/edge/i', $userAgent)) {
+            $browser = 'Edge';
+        }
+
+        // Basic platform detection
+        $platform = 'Unknown';
+        if (preg_match('/windows/i', $userAgent)) {
+            $platform = 'Windows';
+        } elseif (preg_match('/macintosh|mac os x/i', $userAgent)) {
+            $platform = 'MacOS';
+        } elseif (preg_match('/linux/i', $userAgent)) {
+            $platform = 'Linux';
+        } elseif (preg_match('/android/i', $userAgent)) {
+            $platform = 'Android';
+        } elseif (preg_match('/iphone|ipad/i', $userAgent)) {
+            $platform = 'iOS';
+        }
+
+        return [
+            'device_type' => $deviceType,
+            'browser' => $browser,
+            'platform' => $platform
+        ];
+    }
+
+    /**
+     * Get country from IP (basic implementation)
+     */
+    private function getCountryFromIP($ip)
+    {
+        if ($ip === '127.0.0.1' || $ip === '::1') {
+            return 'Localhost';
+        }
+        return 'Unknown';
+    }
+
+    /**
+     * Get city from IP (basic implementation)
+     */
+    private function getCityFromIP($ip)
+    {
+        if ($ip === '127.0.0.1' || $ip === '::1') {
+            return 'Localhost';
+        }
+        return 'Unknown';
+    }
+
+    /**
+     * Show not found page for invalid links
+     */
+    public function notfound()
+    {
+        return view('wa-links.notfound');
     }
 }

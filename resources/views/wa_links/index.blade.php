@@ -136,6 +136,16 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex justify-end space-x-3">
+                                <!-- Analytics Button -->
+                                <a href="{{ route('wa-links.analytics', $l) }}" 
+                                   class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    Analytics
+                                </a>
+
+                                <!-- Edit Button -->
                                 <a href="{{ route('wa-links.edit', $l) }}" 
                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,6 +153,8 @@
                                     </svg>
                                     Edit
                                 </a>
+
+                                <!-- Delete Button -->
                                 <form action="{{ route('wa-links.destroy', $l) }}" method="POST" 
                                       onsubmit="return confirm('Are you sure you want to delete this link?');">
                                     @csrf
@@ -187,3 +199,7 @@
         @endif
     </div>
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+@endpush

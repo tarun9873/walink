@@ -74,6 +74,11 @@ Route::middleware(['auth', 'verified', 'subscription'])->group(function () {
     });
 });
 
+
+Route::get('/wa-links/{id}/analytics', [WaLinkController::class, 'analytics'])->name('wa-links.analytics');
+Route::resource('wa-links', WaLinkController::class);
+
+
 // ===================================================
 // 7️⃣ CATCH-ALL SLUG (ALWAYS LAST!)
 // ===================================================
