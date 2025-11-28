@@ -57,7 +57,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="mb-8 bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-2xl shadow-xl">
+                    <div class="mb-8 bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-2xl shadow-xl bg-black">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <i class="fas fa-rocket text-2xl"></i>
