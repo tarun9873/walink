@@ -14,68 +14,11 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl shadow-xl">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-lg font-semibold">{{ session('success') }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="mb-8 bg-gradient-to-r from-red-500 to-pink-600 text-white p-6 rounded-2xl shadow-xl">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-circle text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-lg font-semibold">{{ session('error') }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            <!-- Current Subscription Status -->
-            @auth
-                @if(auth()->user()->hasActiveSubscription())
-                    <div class="mb-8 bg-gradient-to-r from-blue-500 to-cyan-600 text-white p-6 rounded-2xl shadow-xl">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-shield-check text-2xl"></i>
-                            </div>
-                            <div class="ml-4 flex-1">
-                                <h4 class="text-xl font-bold">Active Subscription</h4>
-                                <p class="text-blue-100 mt-1">
-                                    You're on <strong>{{ auth()->user()->activeSubscription->plan->name }}</strong> plan
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="mb-8 bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-2xl shadow-xl bg-black">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-rocket text-2xl"></i>
-                            </div>
-                            <div class="ml-4 flex-1">
-                                <h4 class="text-xl font-bold">Ready to Get Started?</h4>
-                                <p class="text-orange-100 mt-1">Choose a plan below to start creating WhatsApp links</p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-            @endauth
-
             <!-- Plans Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 @foreach($plans as $plan)
                 <div class="group relative">
-                    <!-- Popular Badge for specific plan -->
+                    <!-- Popular Badge -->
                     @if($plan->is_popular)
                     <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                         <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center space-x-2">
@@ -100,19 +43,16 @@
                             <div class="text-center mb-6">
                                 <div class="flex items-baseline justify-center">
                                     <span class="text-5xl font-bold text-gray-900">₹{{ number_format($plan->price, 0) }}</span>
-                                    <span class="text-gray-500 ml-2">
-                                        /{{ $plan->billing_cycle }}
-                                    </span>
+                                    <span class="text-gray-500 ml-2">/{{ $plan->billing_cycle }}</span>
                                 </div>
                                 <p class="text-gray-500 text-sm mt-2">
                                     {{ $plan->billing_cycle == 'year' ? 'Billed annually' : 'Billed monthly' }}
                                 </p>
                             </div>
                             
-                            <!-- Features from Database Array -->
+                            <!-- Features from Database -->
                             <ul class="space-y-4 mb-8">
                                 @php
-                                    // Check if features is already an array or needs to be decoded
                                     $features = is_array($plan->features) ? $plan->features : json_decode($plan->features, true);
                                     $features = $features ?? [];
                                 @endphp
@@ -132,55 +72,22 @@
                         
                         <!-- CTA Button -->
                         <div class="p-8 pt-0">
-                            @auth
-                                @if(auth()->user()->hasActiveSubscription() && auth()->user()->activeSubscription->plan_id == $plan->id)
-                                    <button class="w-full bg-gradient-to-r from-gray-400 to-gray-500 text-white py-4 px-6 rounded-xl font-bold text-lg cursor-not-allowed transform transition-all duration-300">
-                                        <i class="fas fa-check-circle mr-2"></i>
-                                        Current Plan
-                                    </button>
-                                @else
-                                    <form action="{{ route('subscribe', $plan) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" 
-                                                class="w-full bg-gradient-to-r 
-                                                       @if($plan->sort_order == 1) from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
-                                                       @elseif($plan->is_popular) from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600
-                                                       @else from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700
-                                                       @endif 
-                                                       text-white py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
-                                                       hover:scale-105 hover:shadow-xl">
-                                            <i class="fas 
-                                                @if($plan->sort_order == 1) fa-user-plus
-                                                @elseif($plan->is_popular) fa-bolt
-                                                @else fa-crown
-                                                @endif 
-                                                mr-2"></i>
-                                            @if(auth()->user()->hasActiveSubscription())
-                                                Switch to Plan
-                                            @else
-                                                Get Started
-                                            @endif
-                                        </button>
-                                    </form>
-                                @endif
-                            @else
-                                <a href="{{ route('register') }}?plan={{ $plan->id }}" 
-                                   class="block w-full bg-gradient-to-r 
-                                          @if($plan->sort_order == 1) from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
-                                          @elseif($plan->is_popular) from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600
-                                          @else from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700
-                                          @endif 
-                                          text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
-                                          hover:scale-105 hover:shadow-xl">
-                                    <i class="fas 
-                                        @if($plan->sort_order == 1) fa-user-plus
-                                        @elseif($plan->is_popular) fa-bolt
-                                        @else fa-crown
-                                        @endif 
-                                        mr-2"></i>
-                                    Sign Up Noww
-                                </a>
-                            @endif
+                            <a href="http://127.0.0.1:8000/pricing-buy" 
+                               class="block w-full bg-gradient-to-r 
+                                      @if($plan->sort_order == 1) from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
+                                      @elseif($plan->is_popular) from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600
+                                      @else from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700
+                                      @endif 
+                                      text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
+                                      hover:scale-105 hover:shadow-xl">
+                                <i class="fas 
+                                    @if($plan->sort_order == 1) fa-user-plus
+                                    @elseif($plan->is_popular) fa-bolt
+                                    @else fa-crown
+                                    @endif 
+                                    mr-2"></i>
+                                Get Started
+                            </a>
                         </div>
                     </div>
                 </div>
