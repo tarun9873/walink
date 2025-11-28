@@ -7,6 +7,8 @@ use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\AdminController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -78,6 +80,41 @@ Route::middleware(['auth', 'verified', 'subscription'])->group(function () {
 Route::get('/wa-links/{id}/analytics', [WaLinkController::class, 'analytics'])->name('wa-links.analytics');
 Route::resource('wa-links', WaLinkController::class);
 
+// ===================================================
+// 8️⃣ ADMIN ROUTES (NEW - Add before catch-all slug)
+// ===================================================
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    
+    // Users Management
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
+    
+    // Plans Management
+    Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
+    
+    // Assign Plan
+    Route::get('/assign-plan/{userId?}', [AdminController::class, 'assignPlanForm'])->name('assign-plan.form');
+    Route::post('/assign-plan', [AdminController::class, 'assignPlan'])->name('assign-plan');
+    
+    // Extend Plan
+    Route::post('/extend-plan/{user}', [AdminController::class, 'extendPlan'])->name('extend-plan');
+    
+    // Cancel Subscription
+    Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
+    
+    // Plan Management
+    Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');
+    Route::post('/toggle-plan/{plan}', [AdminController::class, 'togglePlanStatus'])->name('toggle-plan');
+});
+
+// Home route redirect to admin dashboard if admin
+Route::get('/home', function () {
+    if (auth()->check() && auth()->user()->email === 'ak3400988@gmail.com') {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect('/');
+});
 
 // ===================================================
 // 7️⃣ CATCH-ALL SLUG (ALWAYS LAST!)

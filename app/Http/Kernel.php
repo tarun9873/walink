@@ -65,5 +65,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'subscription' => \App\Http\Middleware\CheckSubscription::class,
     'link.limit' => \App\Http\Middleware\CheckLinkLimit::class,
+    'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
 }
