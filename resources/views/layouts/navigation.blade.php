@@ -11,7 +11,7 @@
         <div class="images-logo">
             <img src="/images/downloa7_7484d.webp" 
                  alt="Walive Logo" 
-                 class="block h-6 w-auto" />
+                 class="block h-6 w-auto" style="height:60px;"/>
         </div>
 
     </a>
