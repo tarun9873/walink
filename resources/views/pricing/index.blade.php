@@ -178,7 +178,7 @@
                                         @else fa-crown
                                         @endif 
                                         mr-2"></i>
-                                    Sign Up Now
+                                    Sign Up Noww
                                 </a>
                             @endif
                         </div>
