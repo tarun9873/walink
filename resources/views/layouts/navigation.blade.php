@@ -5,15 +5,18 @@
             <div class="flex items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route(auth()->check() ? 'dashboard' : 'pricing') }}" class="flex items-center space-x-3 group">
-                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-xl group-hover:scale-110 transition-transform duration-200">
-                            <x-application-logo class="block h-6 w-auto fill-current text-white" />
-                        </div>
-                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            LinkManager
-                        </span>
-                    </a>
-                </div>
+    <a href="{{ route(auth()->check() ? 'dashboard' : 'pricing') }}" class="flex items-center space-x-3 group">
+
+        <!-- Logo Image -->
+        <div class="images-logo">
+            <img src="/images/downloa7_7484d.webp" 
+                 alt="Walive Logo" 
+                 class="block h-6 w-auto" />
+        </div>
+
+    </a>
+</div>
+
 
                 <!-- Navigation Links -->
 <div class="hidden sm:flex sm:items-center sm:ml-10 space-x-1">
