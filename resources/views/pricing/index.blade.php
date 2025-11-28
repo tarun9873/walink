@@ -14,199 +14,177 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Plans Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                
-                <!-- Basic Plan - ₹299/month -->
-                <div class="group relative">
-                    <div class="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden 
-                               transform transition-all duration-500 hover:scale-105 hover:shadow-2xl
-                               h-full flex flex-col">
-                        <div class="p-8 flex-1">
-                            <!-- Plan Header -->
-                            <div class="text-center mb-6">
-                                <h3 class="text-2xl font-bold text-gray-900">Basic</h3>
-                                <p class="text-gray-500 mt-2">Perfect for getting started</p>
-                            </div>
-                            
-                            <!-- Price -->
-                            <div class="text-center mb-6">
-                                <div class="flex items-baseline justify-center">
-                                    <span class="text-5xl font-bold text-gray-900">₹299</span>
-                                    <span class="text-gray-500 ml-2">/month</span>
-                                </div>
-                                <p class="text-gray-500 text-sm mt-2">Billed monthly</p>
-                            </div>
-                            
-                            <!-- Features -->
-                            <ul class="space-y-4 mb-8">
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">5 WhatsApp Links</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">Basic Analytics</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">Custom Messages</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">Email Support</span>
-                                </li>
-                            </ul>
+            @if(session('success'))
+                <div class="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl shadow-xl">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-2xl"></i>
                         </div>
-                        
-                        <!-- CTA Button -->
-                        <div class="p-8 pt-0">
-                            <a href="{{ url('/pricing-buy') }}" 
-                               class="block w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <i class="fas fa-user-plus mr-2"></i>
-                                Get Started
-                            </a>
+                        <div class="ml-4">
+                            <p class="text-lg font-semibold">{{ session('success') }}</p>
                         </div>
                     </div>
                 </div>
+            @endif
 
-                <!-- Professional Plan - ₹999/month -->
+            @if(session('error'))
+                <div class="mb-8 bg-gradient-to-r from-red-500 to-pink-600 text-white p-6 rounded-2xl shadow-xl">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-lg font-semibold">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Current Subscription Status -->
+            @auth
+                @if(auth()->user()->hasActiveSubscription())
+                    <div class="mb-8 bg-gradient-to-r from-blue-500 to-cyan-600 text-white p-6 rounded-2xl shadow-xl">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-shield-check text-2xl"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <h4 class="text-xl font-bold">Active Subscription</h4>
+                                <p class="text-blue-100 mt-1">
+                                    You're on <strong>{{ auth()->user()->activeSubscription->plan->name }}</strong> plan
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="mb-8 bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-2xl shadow-xl">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-rocket text-2xl"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <h4 class="text-xl font-bold">Ready to Get Started?</h4>
+                                <p class="text-orange-100 mt-1">Choose a plan below to start creating WhatsApp links</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endauth
+
+            <!-- Plans Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                @foreach($plans as $plan)
                 <div class="group relative">
-                    <!-- Popular Badge -->
+                    <!-- Popular Badge for specific plan -->
+                    @if($plan->is_popular)
                     <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                         <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center space-x-2">
                             <i class="fas fa-fire"></i>
                             <span>MOST POPULAR</span>
                         </div>
                     </div>
+                    @endif
                     
-                    <div class="bg-white rounded-3xl shadow-2xl border-2 border-yellow-400 overflow-hidden 
-                               transform transition-all duration-500 hover:scale-105 hover:shadow-2xl
-                               h-full flex flex-col">
-                        <div class="p-8 flex-1">
-                            <!-- Plan Header -->
-                            <div class="text-center mb-6">
-                                <h3 class="text-2xl font-bold text-gray-900">Professional</h3>
-                                <p class="text-gray-500 mt-2">Best for growing businesses</p>
-                            </div>
-                            
-                            <!-- Price -->
-                            <div class="text-center mb-6">
-                                <div class="flex items-baseline justify-center">
-                                    <span class="text-5xl font-bold text-gray-900">₹999</span>
-                                    <span class="text-gray-500 ml-2">/month</span>
-                                </div>
-                                <p class="text-gray-500 text-sm mt-2">Billed monthly</p>
-                            </div>
-                            
-                            <!-- Features -->
-                            <ul class="space-y-4 mb-8">
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium">25 WhatsApp Links</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium">Advanced Analytics</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium">Custom Messages</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium">Priority Support</span>
-                                </li>
-                            </ul>
-                        </div>
-                        
-                        <!-- CTA Button -->
-                        <div class="p-8 pt-0">
-                            <a href="{{ url('/pricing-buy') }}" 
-                               class="block w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <i class="fas fa-bolt mr-2"></i>
-                                Get Started
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Enterprise Plan - ₹2,999/year -->
-                <div class="group relative">
                     <div class="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden 
                                transform transition-all duration-500 hover:scale-105 hover:shadow-2xl
-                               h-full flex flex-col">
+                               h-full flex flex-col
+                               {{ $plan->is_popular ? 'border-2 border-yellow-400 shadow-2xl' : '' }}">
                         <div class="p-8 flex-1">
                             <!-- Plan Header -->
                             <div class="text-center mb-6">
-                                <h3 class="text-2xl font-bold text-gray-900">Enterprise</h3>
-                                <p class="text-gray-500 mt-2">For large scale businesses</p>
+                                <h3 class="text-2xl font-bold text-gray-900">{{ $plan->name }}</h3>
+                                <p class="text-gray-500 mt-2">{{ $plan->description }}</p>
                             </div>
                             
                             <!-- Price -->
                             <div class="text-center mb-6">
                                 <div class="flex items-baseline justify-center">
-                                    <span class="text-5xl font-bold text-gray-900">₹2,999</span>
-                                    <span class="text-gray-500 ml-2">/year</span>
+                                    <span class="text-5xl font-bold text-gray-900">₹{{ number_format($plan->price, 0) }}</span>
+                                    <span class="text-gray-500 ml-2">
+                                        /{{ $plan->billing_cycle }}
+                                    </span>
                                 </div>
-                                <p class="text-gray-500 text-sm mt-2">Billed annually</p>
+                                <p class="text-gray-500 text-sm mt-2">
+                                    {{ $plan->billing_cycle == 'year' ? 'Billed annually' : 'Billed monthly' }}
+                                </p>
                             </div>
                             
-                            <!-- Features -->
+                            <!-- Features from Database Array -->
                             <ul class="space-y-4 mb-8">
+                                @php
+                                    // Check if features is already an array or needs to be decoded
+                                    $features = is_array($plan->features) ? $plan->features : json_decode($plan->features, true);
+                                    $features = $features ?? [];
+                                @endphp
+                                
+                                @foreach($features as $feature)
                                 <li class="flex items-center">
                                     <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
                                         <i class="fas fa-check text-green-600 text-xs"></i>
                                     </div>
-                                    <span class="text-gray-700">100 WhatsApp Links</span>
+                                    <span class="text-gray-700 {{ $plan->is_popular ? 'font-medium' : '' }}">
+                                        {{ $feature }}
+                                    </span>
                                 </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">Full Analytics Suite</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">Custom Messages</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-check text-green-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700">24/7 Phone Support</span>
-                                </li>
+                                @endforeach
                             </ul>
                         </div>
                         
                         <!-- CTA Button -->
                         <div class="p-8 pt-0">
-                            <a href="{{ url('/pricing-buy') }}" 
-                               class="block w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <i class="fas fa-crown mr-2"></i>
-                                Get Started
-                            </a>
+                            @auth
+                                @if(auth()->user()->hasActiveSubscription() && auth()->user()->activeSubscription->plan_id == $plan->id)
+                                    <button class="w-full bg-gradient-to-r from-gray-400 to-gray-500 text-white py-4 px-6 rounded-xl font-bold text-lg cursor-not-allowed transform transition-all duration-300">
+                                        <i class="fas fa-check-circle mr-2"></i>
+                                        Current Plan
+                                    </button>
+                                @else
+                                    <form action="{{ route('subscribe', $plan) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="w-full bg-gradient-to-r 
+                                                       @if($plan->sort_order == 1) from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
+                                                       @elseif($plan->is_popular) from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600
+                                                       @else from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700
+                                                       @endif 
+                                                       text-white py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
+                                                       hover:scale-105 hover:shadow-xl">
+                                            <i class="fas 
+                                                @if($plan->sort_order == 1) fa-user-plus
+                                                @elseif($plan->is_popular) fa-bolt
+                                                @else fa-crown
+                                                @endif 
+                                                mr-2"></i>
+                                            @if(auth()->user()->hasActiveSubscription())
+                                                Switch to Plan
+                                            @else
+                                                Get Started
+                                            @endif
+                                        </button>
+                                    </form>
+                                @endif
+                            @else
+                                <a href="{{ route('register') }}?plan={{ $plan->id }}" 
+                                   class="block w-full bg-gradient-to-r 
+                                          @if($plan->sort_order == 1) from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
+                                          @elseif($plan->is_popular) from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600
+                                          @else from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700
+                                          @endif 
+                                          text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
+                                          hover:scale-105 hover:shadow-xl">
+                                    <i class="fas 
+                                        @if($plan->sort_order == 1) fa-user-plus
+                                        @elseif($plan->is_popular) fa-bolt
+                                        @else fa-crown
+                                        @endif 
+                                        mr-2"></i>
+                                    Sign Up Now
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
+                @endforeach
             </div>
 
             <!-- FAQ Section -->
