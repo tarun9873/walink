@@ -9,7 +9,7 @@
 
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>Walive – WhatsApp Link Generator & QR Maker</title>
-<<!-- Primary meta tags -->
+<!-- Primary meta tags -->
 
 <meta name="description" content="Walive: Free WhatsApp link generator and QR code maker. Create wa.me style short links, custom pre-filled messages and QR codes — share on Instagram, websites, product pages and marketing." />
 <meta name="keywords" content="WhatsApp link generator, WhatsApp short link, wa.me, wa.link alternative, WhatsApp QR code, WhatsApp click to chat, WhatsApp link maker, Walive" />
