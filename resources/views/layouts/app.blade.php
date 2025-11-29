@@ -8,7 +8,30 @@
 <script src="{{ asset('js/app.js') }}" defer></script> <!-- only if you built js separately -->
 
   <meta name="csrf-token" content="{{ csrf_token() }}" />
-  <title>{{ config('app.name', 'Laravel') }}</title>
+  <title>Walive – WhatsApp Link Generator & QR Maker</title>
+<meta name="description" content="Create WhatsApp links instantly with Walive Link — generate wa.me-style short links, custom pre-filled messages, and QR codes. No signup required.">
+<meta name="keywords" content="WhatsApp link generator, wa.link alternative, WhatsApp QR code, WhatsApp short link, click to chat, WhatsApp link maker">
+<meta name="robots" content="index, follow">
+
+
+<!-- Open Graph -->
+<meta property="og:title" content="Walive – WhatsApp Link Generator & QR Maker">
+<meta property="og:description" content="Generate WhatsApp short links, custom messages, and QR codes instantly. The best free Click-to-Chat tool.">
+<meta property="og:url" content="https://walive.link/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/assets/og-image.png">
+
+
+<!-- Schema (basic) -->
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"WebSite",
+"name":"Walive",
+"url":"https://walive.link/",
+"description":"Create WhatsApp short links, custom messages, and QR codes instantly. A perfect alternative to wa.link."
+}
+</script>
 
   {{-- Load assets --}}
   @if (file_exists(public_path('mix-manifest.json')))
