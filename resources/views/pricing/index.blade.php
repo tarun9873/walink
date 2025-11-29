@@ -3,11 +3,11 @@
         <div class="text-center">
             <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-white text-sm font-medium mb-4">
                 <i class="fas fa-crown mr-2"></i>
-               Walive – WhatsApp Link Generator & QR Maker
+               <h2>Walive – WhatsApp Link Generator & QR Maker</h2>
             </div>
-            <h2 class="font-bold text-4xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 class="font-bold text-4xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Pricing That Grows With You
-            </h2>
+            </h1>
             <p class="text-gray-600 mt-4 text-lg max-w-2xl mx-auto">Start free. Upgrade as you grow. No hidden fees.</p>
         </div>
     </x-slot>
