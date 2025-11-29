@@ -5,9 +5,9 @@
                 <i class="fas fa-crown mr-2"></i>
                Walive – WhatsApp Link Generator & QR Maker
             </div>
-            <h1 class="font-bold text-4xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 class="font-bold text-4xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Pricing That Grows With You
-            </h1>
+            </h2>
             <p class="text-gray-600 mt-4 text-lg max-w-2xl mx-auto">Start free. Upgrade as you grow. No hidden fees.</p>
         </div>
     </x-slot>
