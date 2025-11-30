@@ -185,7 +185,7 @@
                 <div>
                     <h4 class="font-semibold text-gray-900 mb-2">Your Link</h4>
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <code class="text-sm break-all">https://walive.link//{{ $waLink->slug }}</code>
+                        <code class="text-sm break-all">https://walive.link/{{ $waLink->slug }}</code>
                     </div>
                     <a href="{{ url($waLink->slug) }}" target="_blank" 
                        class="inline-flex items-center mt-3 text-blue-600 hover:text-blue-800">
