@@ -72,7 +72,7 @@
                         
                         <!-- CTA Button -->
                         <div class="p-8 pt-0">
-                            <a href="http://127.0.0.1:8000/pricing-buy" 
+                            <a href="/pricing-buy" 
                                class="block w-full bg-gradient-to-r 
                                       @if($plan->sort_order == 1) from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
                                       @elseif($plan->is_popular) from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600
