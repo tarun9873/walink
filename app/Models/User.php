@@ -72,7 +72,9 @@ class User extends Authenticatable
         $subscription = $this->activeSubscription;
         $currentLinksCount = $this->waLinks()->count();
         
-        return $currentLinksCount < $subscription->plan->links_limit;
+        // NEW: Plan links + Subscription extra links combine karo
+        $totalAllowed = $subscription->plan->links_limit + $subscription->extra_links;
+        return $currentLinksCount < $totalAllowed;
     }
 
     public function getRemainingLinksAttribute()
@@ -84,6 +86,8 @@ class User extends Authenticatable
         $subscription = $this->activeSubscription;
         $currentLinksCount = $this->waLinks()->count();
         
-        return max(0, $subscription->plan->links_limit - $currentLinksCount);
+        // NEW: Plan links + Subscription extra links combine karo
+        $totalAllowed = $subscription->plan->links_limit + $subscription->extra_links;
+        return max(0, $totalAllowed - $currentLinksCount);
     }
 }

@@ -6,54 +6,69 @@ use Illuminate\Http\Request;
 use App\Models\WaLink;
 use App\Models\Subscription;
 use App\Models\Plan;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Get current logged in user ID
-        $userId = auth()->id();
+        // Get current logged in user
+        $user = Auth::user();
+        $userId = $user->id;
         
-        // Get user's active subscription
+        // Get user's active subscription with plan
         $subscription = Subscription::where('user_id', $userId)
-            ->active()
-            ->with('plan') // Eager load plan relationship
+            ->where('status', 'active')
+            ->with('plan')
             ->first();
         
-        // Get plan limits
+        // Get plan limits and extra links
         if ($subscription && $subscription->plan) {
             $planLimit = $subscription->plan->links_limit;
             $planName = $subscription->plan->name;
+            $extraLinks = $subscription->extra_links ?? 0;
+            $totalLimit = $planLimit + $extraLinks;
         } else {
-            // Default limit if no active subscription
-            $planLimit = 0; // Free plan limit
-            $planName = 'Free Plan';
+            // Default values if no active subscription
+            $planLimit = 0;
+            $planName = 'No Active Plan';
+            $extraLinks = 0;
+            $totalLimit = 0;
         }
         
         // Get actual data from WaLink model for current user
         $totalLinks = WaLink::where('user_id', $userId)->count();
         $usedLinks = WaLink::where('user_id', $userId)->where('is_active', 1)->count();
-        $remainingLinks = max(0, $planLimit - $usedLinks);
-        $usagePercentage = $planLimit > 0 ? ($usedLinks / $planLimit) * 100 : 0;
+        $remainingLinks = max(0, $totalLimit - $usedLinks);
+        
+        // Calculate usage percentages
+        $planUsagePercentage = $planLimit > 0 ? min(100, ($usedLinks / $planLimit) * 100) : 0;
+        $totalUsagePercentage = $totalLimit > 0 ? min(100, ($usedLinks / $totalLimit) * 100) : 0;
         
         // Get subscription expiry info
         $expiryDate = $subscription ? $subscription->expires_at : null;
         $daysRemaining = $subscription ? $subscription->daysRemaining() : 0;
         
-        // Get user info
-        $user = auth()->user();
+        // Calculate breakdown of used links
+        $planLinksUsed = min($usedLinks, $planLimit);
+        $extraLinksUsed = max(0, $usedLinks - $planLimit);
 
         return view('dashboard', compact(
             'totalLinks',
             'usedLinks',
             'remainingLinks',
-            'usagePercentage',
+            'planUsagePercentage',
+            'totalUsagePercentage',
             'planLimit',
+            'extraLinks',
+            'totalLimit',
             'subscription',
             'expiryDate',
             'daysRemaining',
             'planName',
-            'user'
+            'user',
+            'planLinksUsed',
+            'extraLinksUsed'
         ));
     }
 }

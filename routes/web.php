@@ -83,6 +83,9 @@ Route::resource('wa-links', WaLinkController::class);
 // ===================================================
 // 8️⃣ ADMIN ROUTES (NEW - Add before catch-all slug)
 // ===================================================
+// ===================================================
+// 8️⃣ ADMIN ROUTES (NEW - Add before catch-all slug)
+// ===================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -93,15 +96,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Plans Management
     Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
     
-    // Assign Plan
+    // User Subscription Actions - YEH IMPORTANT HAI
+    Route::post('/users/{user}/add-links', [AdminController::class, 'addLinks'])->name('add-links');
+    Route::post('/users/{user}/extend-plan', [AdminController::class, 'extendUserPlan'])->name('extend-plan');
+    Route::post('/users/{user}/upgrade-plan', [AdminController::class, 'upgradePlan'])->name('upgrade-plan');
+    
+    // Assign Plan Routes
     Route::get('/assign-plan/{userId?}', [AdminController::class, 'assignPlanForm'])->name('assign-plan.form');
     Route::post('/assign-plan', [AdminController::class, 'assignPlan'])->name('assign-plan');
     
-    // Extend Plan
-    Route::post('/extend-plan/{user}', [AdminController::class, 'extendPlan'])->name('extend-plan');
-    
     // Cancel Subscription
+    // DELETE method use karo
+    // Cancel Subscription - DONO METHODS ALLOW KARO
     Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
+
+
     
     // Plan Management
     Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');

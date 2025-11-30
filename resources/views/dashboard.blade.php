@@ -8,20 +8,26 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Subscription Info (SAFE) --}}
+            {{-- Subscription Info (UPDATED WITH EXTRA LINKS) --}}
             @php
-                // Safe helpers: if $subscription is null, we fall back to defaults
+                // Safe helpers with extra links support
                 $plan = isset($subscription) ? ($subscription->plan ?? null) : null;
                 $planName = $plan ? $plan->name : 'Free Plan';
                 $planLimit = isset($planLimit) ? $planLimit : ($plan ? ($plan->links_limit ?? 0) : 0);
+                $extraLinks = $extraLinks ?? 0;
+                $totalLimit = $planLimit + $extraLinks;
                 $usedLinks = isset($usedLinks) ? $usedLinks : 0;
-                $remainingLinks = max($planLimit - $usedLinks, 0);
+                $remainingLinks = max($totalLimit - $usedLinks, 0);
                 $totalLinks = isset($totalLinks) ? $totalLinks : $usedLinks;
-                $usagePercentage = $planLimit > 0 ? ($usedLinks / max($planLimit,1) * 100) : ($usedLinks ? 100 : 0);
+                $usagePercentage = $totalLimit > 0 ? ($usedLinks / max($totalLimit,1) * 100) : ($usedLinks ? 100 : 0);
 
-                // expiry data safe defaults (controller should set these when subscription exists)
+                // expiry data safe defaults
                 $daysRemaining = $daysRemaining ?? null;
                 $expiryDate = $expiryDate ?? null;
+
+                // Calculate breakdown
+                $planLinksUsed = min($usedLinks, $planLimit);
+                $extraLinksUsed = max(0, $usedLinks - $planLimit);
             @endphp
 
             @if(isset($subscription) && $subscription)
@@ -40,10 +46,21 @@
                                 Subscription details not available
                             @endif
                         </p>
+                        
+                        {{-- Extra Links Badge --}}
+                        @if($extraLinks > 0)
+                        <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-500 text-white">
+                            <i class="fas fa-plus mr-1"></i>
+                            {{ $extraLinks }} Extra Links
+                        </div>
+                        @endif
                     </div>
                     <div class="text-right">
-                        <p class="text-2xl font-bold">{{ $planLimit == 0 ? 'Unlimited' : $planLimit }} Links</p>
-                        <p class="text-blue-100">Plan Limit</p>
+                        <p class="text-2xl font-bold">{{ $totalLimit == 0 ? 'Unlimited' : $totalLimit }} Links</p>
+                        <p class="text-blue-100">Total Available</p>
+                        @if($extraLinks > 0)
+                        <p class="text-blue-100 text-sm">({{ $planLimit }} plan + {{ $extraLinks }} extra)</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -62,17 +79,20 @@
             </div>
             @endif
 
-            {{-- Statistics Cards --}}
+            {{-- Statistics Cards (UPDATED) --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {{-- Plan Limit Card --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-blue-500">
+                {{-- Total Limit Card --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-purple-500">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-500 mr-4">
                             <i class="fas fa-layer-group text-xl"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-600">Plan Limit</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $planLimit == 0 ? 'Unlimited' : $planLimit }}</p>
+                            <p class="text-sm font-medium text-gray-600">Total Limit</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalLimit == 0 ? 'Unlimited' : $totalLimit }}</p>
+                            @if($extraLinks > 0)
+                            <p class="text-xs text-green-600">{{ $planLimit }} + {{ $extraLinks }} extra</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -86,14 +106,17 @@
                         <div>
                             <p class="text-sm font-medium text-gray-600">Active Links</p>
                             <p class="text-2xl font-bold text-gray-900">{{ $usedLinks }}</p>
+                            @if($extraLinks > 0 && $extraLinksUsed > 0)
+                            <p class="text-xs text-gray-500">{{ $planLinksUsed }} plan + {{ $extraLinksUsed }} extra</p>
+                            @endif
                         </div>
                     </div>
                 </div>
 
                 {{-- Remaining Links Card --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-purple-500">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-blue-500">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-purple-100 text-purple-500 mr-4">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
                             <i class="fas fa-arrow-right text-xl"></i>
                         </div>
                         <div>
@@ -117,28 +140,58 @@
                 </div>
             </div>
 
-            {{-- Progress Bar --}}
+            {{-- Progress Bar (UPDATED) --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-gray-900">Link Usage Progress</h3>
-                    <span class="text-sm font-medium text-gray-600">{{ $usedLinks }}/{{ $planLimit == 0 ? '∞' : $planLimit }} ({{ round($usagePercentage) }}%)</span>
+                    <span class="text-sm font-medium text-gray-600">{{ $usedLinks }}/{{ $totalLimit == 0 ? '∞' : $totalLimit }} ({{ round($usagePercentage) }}%)</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-4">
+                
+                {{-- Main Progress Bar --}}
+                <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
                     <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" 
-                         style="width: {{ $planLimit == 0 ? 100 : min(100, max(0, $usagePercentage)) }}%"></div>
+                         style="width: {{ $totalLimit == 0 ? 100 : min(100, max(0, $usagePercentage)) }}%"></div>
                 </div>
+                
+                {{-- Breakdown Progress Bars --}}
+                @if($extraLinks > 0)
+                <div class="space-y-2 mt-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Plan Links: {{ $planLinksUsed }}/{{ $planLimit }}</span>
+                        <span class="text-gray-600">{{ $planLimit - $planLinksUsed }} remaining</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        @php
+                            $planUsagePercentage = $planLimit > 0 ? min(100, ($planLinksUsed / $planLimit) * 100) : 0;
+                        @endphp
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: {{ $planUsagePercentage }}%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Extra Links: {{ $extraLinksUsed }}/{{ $extraLinks }}</span>
+                        <span class="text-gray-600">{{ $extraLinks - $extraLinksUsed }} remaining</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        @php
+                            $extraUsagePercentage = $extraLinks > 0 ? min(100, ($extraLinksUsed / $extraLinks) * 100) : 0;
+                        @endphp
+                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ $extraUsagePercentage }}%"></div>
+                    </div>
+                </div>
+                @else
                 <div class="flex justify-between text-sm text-gray-600 mt-2">
                     <span>{{ $usedLinks }} used</span>
-                    <span>{{ $planLimit == 0 ? 'Unlimited' : $remainingLinks }} remaining</span>
+                    <span>{{ $totalLimit == 0 ? 'Unlimited' : $remainingLinks }} remaining</span>
                 </div>
+                @endif
             </div>
 
-            {{-- Account Information --}}
+            {{-- Account Information (UPDATED) --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium text-gray-900">Account Information</h3>
-                        @if($remainingLinks > 0 || $planLimit == 0)
+                        @if($remainingLinks > 0 || $totalLimit == 0)
                         <a href="{{ route('wa-links.index') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             <i class="fas fa-plus mr-2"></i>All Links Show
                         </a>
@@ -165,10 +218,9 @@
                                 <span class="text-gray-600">Account Created:</span>
                                 <span class="font-medium">{{ optional(Auth::user())->created_at ? optional(Auth::user())->created_at->format('M d, Y') : '—' }}</span>
                             </div>
-                            
                         </div>
 
-                        {{-- Subscription Information --}}
+                        {{-- Subscription Information (UPDATED) --}}
                         <div class="space-y-4">
                             <h4 class="text-md font-semibold text-gray-700 border-b pb-2">Subscription Details</h4>
                             <div class="flex justify-between">
@@ -179,9 +231,19 @@
                                 <span class="text-gray-600">Plan Limit:</span>
                                 <span class="font-medium">{{ $planLimit == 0 ? 'Unlimited' : $planLimit }} Links</span>
                             </div>
+                            @if($extraLinks > 0)
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Extra Links:</span>
+                                <span class="font-medium text-green-600">+{{ $extraLinks }} Links</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Available:</span>
+                                <span class="font-medium text-purple-600">{{ $totalLimit }} Links</span>
+                            </div>
+                            @endif
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Links Used:</span>
-                                <span class="font-medium">{{ $usedLinks }} / {{ $planLimit == 0 ? 'Unlimited' : $planLimit }}</span>
+                                <span class="font-medium">{{ $usedLinks }} / {{ $totalLimit == 0 ? 'Unlimited' : $totalLimit }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Status:</span>
@@ -210,6 +272,11 @@
                             @if(!isset($subscription) || !$subscription)
                             <a href="{{ route('pricing') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                                 <i class="fas fa-crown mr-2"></i>Upgrade Plan
+                            </a>
+                            @endif
+                            @if($remainingLinks > 0 || $totalLimit == 0)
+                            <a href="{{ route('wa-links.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                <i class="fas fa-plus mr-2"></i>Create New Link
                             </a>
                             @endif
                         </div>
