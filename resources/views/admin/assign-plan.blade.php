@@ -177,7 +177,7 @@
                                         @else
                                             <!-- Assign Plan -->
                                             <button type="button" 
-                                                    onclick="window.location.href='{{ route('admin.assign-plan.user', $user->id) }}'" 
+                                                    onclick="window.location.href='{{ route('admin.assign-plan', $user->id) }}'" 
                                                     class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded text-xs">
                                                 <i class="fas fa-gift mr-1"></i>Assign Plan
                                             </button>
