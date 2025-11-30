@@ -298,7 +298,7 @@
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-auto shadow-xl">
+            <div class="bg-white rounded-2xl p-6  shadow-xl">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">${title}</h3>
                     <button type="button" onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 transition">
