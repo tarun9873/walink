@@ -24,6 +24,9 @@ require __DIR__.'/auth.php';
 // 2️⃣ PUBLIC ROUTES
 // ===================================================
 Route::get('/', [PricingController::class, 'index'])->name('pricing');
+Route::get('/about', function () {
+    return view('pricing.about');
+})->name('about');
 
 Route::get('/link-not-found', function () {
     return view('wa_links.notfound');
