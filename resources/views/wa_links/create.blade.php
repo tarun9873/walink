@@ -1,4 +1,12 @@
-<x-app-layout>
+{{-- C:\Users\Tarun\wa-links-app\resources\views\wa_links\create.blade.php --}}
+@extends('layouts.app')
+
+@section('title', 'Create WhatsApp Link')
+
+@section('page-title', 'Create WhatsApp Link')
+@section('page-subtitle', 'Create a new WhatsApp sharing link')
+
+@section('content')
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <div>
@@ -260,4 +268,4 @@
             });
         });
     </script>
-</x-app-layout>
+@endsection

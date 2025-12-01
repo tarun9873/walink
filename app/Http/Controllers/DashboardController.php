@@ -12,12 +12,21 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+        
         // Get current logged in user
         $user = Auth::user();
-        $userId = $user->id;
+        
+        // Check if user exists
+        if (!$user) {
+            return redirect()->route('login');
+        }
         
         // Get user's active subscription with plan
-        $subscription = Subscription::where('user_id', $userId)
+        $subscription = Subscription::where('user_id', $user->id)
             ->where('status', 'active')
             ->with('plan')
             ->first();
@@ -30,15 +39,15 @@ class DashboardController extends Controller
             $totalLimit = $planLimit + $extraLinks;
         } else {
             // Default values if no active subscription
-            $planLimit = 0;
-            $planName = 'No Active Plan';
+            $planLimit = 5; // Default free plan links
+            $planName = 'Free Plan';
             $extraLinks = 0;
-            $totalLimit = 0;
+            $totalLimit = $planLimit;
         }
         
         // Get actual data from WaLink model for current user
-        $totalLinks = WaLink::where('user_id', $userId)->count();
-        $usedLinks = WaLink::where('user_id', $userId)->where('is_active', 1)->count();
+        $totalLinks = WaLink::where('user_id', $user->id)->count();
+        $usedLinks = WaLink::where('user_id', $user->id)->where('is_active', 1)->count();
         $remainingLinks = max(0, $totalLimit - $usedLinks);
         
         // Calculate usage percentages

@@ -95,7 +95,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Plans Management
     Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
-    
+     // **NEW: Subscriptions Management - ADD THIS**
+    Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
     // User Subscription Actions - YEH IMPORTANT HAI
     Route::post('/users/{user}/add-links', [AdminController::class, 'addLinks'])->name('add-links');
     Route::post('/users/{user}/extend-plan', [AdminController::class, 'extendUserPlan'])->name('extend-plan');
