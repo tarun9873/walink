@@ -84,252 +84,248 @@
             <h3 class="text-base md:text-lg font-semibold text-white">Your WhatsApp Links</h3>
         </div>
 
-        <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <div class="min-w-full inline-block align-middle">
-                <div class="overflow-hidden">
-                    <!-- Mobile/Table View -->
-                    <div class="block sm:hidden">
-                        <div class="px-4 py-3 space-y-4">
-                            @forelse($links as $l)
-                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <!-- Link Header -->
-                                <div class="flex justify-between items-start mb-3">
-                                    <div>
-                                        <a href="{{ url($l->slug) }}" target="_blank" 
-                                           class="font-semibold text-gray-900 hover:text-black transition flex items-center">
-                                            {{ $l->name }}
-                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                            </svg>
-                                        </a>
-                                        <p class="text-xs text-gray-500 mt-1 font-mono truncate">{{ $l->slug }}</p>
-                                    </div>
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                                        {{ $l->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ $l->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </div>
+        <!-- Mobile/Table View -->
+        <div class="block sm:hidden">
+            <div class="px-4 py-3 space-y-4">
+                @forelse($links as $l)
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <!-- Link Header -->
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1 min-w-0 mr-2">
+                            <a href="{{ url($l->slug) }}" target="_blank" 
+                               class="font-semibold text-gray-900 hover:text-black transition flex items-center truncate">
+                                {{ $l->name }}
+                                <svg class="w-4 h-4 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                            <p class="text-xs text-gray-500 mt-1 font-mono truncate">{{ $l->slug }}</p>
+                        </div>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0
+                            {{ $l->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ $l->is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </div>
 
-                                <!-- Link Details -->
-                                <div class="space-y-2 mb-4">
-                                    <div class="flex items-center text-sm text-gray-700">
-                                        <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                        </svg>
-                                        <span class="truncate">{{ $l->phone }}</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-700">
-                                        <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
-                                        </svg>
-                                        <span>{{ $l->clicks }} clicks</span>
-                                    </div>
-                                </div>
-
-                                <!-- Message Preview -->
-                                @if($l->message)
-                                    <div class="mb-4">
-                                        <p class="text-xs text-gray-400 truncate">Message: {{ $l->message }}</p>
-                                    </div>
-                                @endif
-
-                                <!-- Action Buttons -->
-                                <div class="flex flex-wrap gap-2">
-                                    <!-- URL Copy -->
-                                    <button type="button" onclick="copyToClipboard('{{ url($l->slug) }}')" 
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                        </svg>
-                                        Copy
-                                    </button>
-                                    
-                                    <!-- QR Code -->
-                                    <button type="button" onclick="generateQRCode('{{ url($l->slug) }}', '{{ $l->name }}')" 
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                                        </svg>
-                                        QR
-                                    </button>
-
-                                    <!-- Analytics -->
-                                    <a href="{{ route('wa-links.analytics', $l) }}" 
-                                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                        </svg>
-                                        Stats
-                                    </a>
-
-                                    <!-- Edit -->
-                                    <a href="{{ route('wa-links.edit', $l) }}" 
-                                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                        Edit
-                                    </a>
-
-                                    <!-- Delete -->
-                                    <form action="{{ route('wa-links.destroy', $l) }}" method="POST" 
-                                          onsubmit="return confirm('Are you sure you want to delete this link?');" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            @empty
-                            <div class="text-center py-12">
-                                <div class="text-gray-400">
-                                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                    </svg>
-                                    <p class="text-lg font-medium text-gray-600">No links created yet</p>
-                                    <p class="text-sm text-gray-500 mt-1">Get started by creating your first WhatsApp link</p>
-                                    <a href="{{ route('wa-links.create') }}" 
-                                       class="inline-flex items-center px-4 py-2 mt-4 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition">
-                                        Create Your First Link
-                                    </a>
-                                </div>
-                            </div>
-                            @endforelse
+                    <!-- Link Details -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-gray-700">
+                            <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span class="truncate">{{ $l->phone }}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-700">
+                            <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+                            </svg>
+                            <span>{{ $l->clicks }} clicks</span>
                         </div>
                     </div>
 
-                    <!-- Desktop Table View -->
-                    <table class="min-w-full divide-y divide-gray-200 hidden sm:table">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Link Details</th>
-                                <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phone</th>
-                                <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Clicks</th>
-                                <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                <th class="px-4 md:px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
+                    <!-- Message Preview -->
+                    @if($l->message)
+                        <div class="mb-4">
+                            <p class="text-xs text-gray-600 truncate">{{ $l->message }}</p>
+                        </div>
+                    @endif
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-2">
+                        <!-- URL Copy -->
+                        <button type="button" onclick="copyToClipboard('{{ url($l->slug) }}')" 
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex-1 min-w-[80px] justify-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            Copy
+                        </button>
                         
-                        <tbody class="divide-y divide-gray-200">
-                            @forelse($links as $l)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-4 md:px-6 py-4">
-                                    <div>
-                                        <a href="{{ url($l->slug) }}" target="_blank" 
-                                           class="font-semibold text-gray-900 hover:text-black transition flex items-center">
-                                            {{ $l->name }}
-                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                            </svg>
-                                        </a>
-                                        <p class="text-sm text-gray-500 mt-1 font-mono">{{ $l->slug }}</p>
-                                        @if($l->message)
-                                            <p class="text-xs text-gray-400 mt-1 truncate max-w-xs">{{ $l->message }}</p>
-                                        @endif
-                                        
-                                        <!-- URL Copy and QR Code Buttons -->
-                                        <div class="flex space-x-2 mt-2">
-                                            <button type="button" onclick="copyToClipboard('{{ url($l->slug) }}')" 
-                                                    class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition copy-url-btn">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                                </svg>
-                                                Copy URL
-                                            </button>
-                                            
-                                            <button type="button" onclick="generateQRCode('{{ url($l->slug) }}', '{{ $l->name }}')" 
-                                                    class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition qr-code-btn">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                                                </svg>
-                                                QR Code
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 md:px-6 py-4">
-                                    <div class="flex items-center text-sm text-gray-900">
-                                        <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                        </svg>
-                                        {{ $l->phone }}
-                                    </div>
-                                </td>
-                                <td class="px-4 md:px-6 py-4">
-                                    <div class="flex items-center">
-                                        <span class="text-lg font-bold text-gray-900">{{ $l->clicks }}</span>
-                                        <span class="text-xs text-gray-500 ml-1">clicks</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 md:px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-                                        {{ $l->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ $l->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 md:px-6 py-4">
-                                    <div class="flex justify-end space-x-2">
-                                        <!-- Analytics Button -->
-                                        <a href="{{ route('wa-links.analytics', $l) }}" 
-                                           class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                            </svg>
-                                            Stats
-                                        </a>
+                        <!-- QR Code -->
+                        <button type="button" onclick="generateQRCode('{{ url($l->slug) }}', '{{ $l->name }}')" 
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition flex-1 min-w-[80px] justify-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
+                            QR
+                        </button>
 
-                                        <!-- Edit Button -->
-                                        <a href="{{ route('wa-links.edit', $l) }}" 
-                                           class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                            </svg>
-                                            Edit
-                                        </a>
+                        <!-- Analytics -->
+                        <a href="{{ route('wa-links.analytics', $l) }}" 
+                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex-1 min-w-[80px] justify-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            Stats
+                        </a>
 
-                                        <!-- Delete Button -->
-                                        <form action="{{ route('wa-links.destroy', $l) }}" method="POST" 
-                                              onsubmit="return confirm('Are you sure you want to delete this link?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" 
-                                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
-                                    <div class="text-gray-400">
-                                        <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                        </svg>
-                                        <p class="text-lg font-medium text-gray-600">No links created yet</p>
-                                        <p class="text-sm text-gray-500 mt-1">Get started by creating your first WhatsApp link</p>
-                                        <a href="{{ route('wa-links.create') }}" 
-                                           class="inline-flex items-center px-4 py-2 mt-4 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition">
-                                            Create Your First Link
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                        <!-- Edit -->
+                        <a href="{{ route('wa-links.edit', $l) }}" 
+                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition flex-1 min-w-[80px] justify-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Edit
+                        </a>
+
+                        <!-- Delete -->
+                        <form action="{{ route('wa-links.destroy', $l) }}" method="POST" 
+                              onsubmit="return confirm('Are you sure you want to delete this link?');" class="flex-1 min-w-[80px]">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" 
+                                    class="w-full inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition justify-center">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
+                @empty
+                <div class="text-center py-12">
+                    <div class="text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <p class="text-lg font-medium text-gray-600">No links created yet</p>
+                        <p class="text-sm text-gray-500 mt-1">Get started by creating your first WhatsApp link</p>
+                        <a href="{{ route('wa-links.create') }}" 
+                           class="inline-flex items-center px-4 py-2 mt-4 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                            Create Your First Link
+                        </a>
+                    </div>
+                </div>
+                @endforelse
             </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Link Details</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phone</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Clicks</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-4 md:px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                
+                <tbody class="divide-y divide-gray-200">
+                    @forelse($links as $l)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-4 md:px-6 py-4">
+                            <div>
+                                <a href="{{ url($l->slug) }}" target="_blank" 
+                                   class="font-semibold text-gray-900 hover:text-black transition flex items-center">
+                                    {{ $l->name }}
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                    </svg>
+                                </a>
+                                <p class="text-sm text-gray-500 mt-1 font-mono truncate max-w-xs">{{ $l->slug }}</p>
+                                @if($l->message)
+                                    <p class="text-xs text-gray-600 mt-1 truncate max-w-xs">{{ $l->message }}</p>
+                                @endif
+                                
+                                <!-- URL Copy and QR Code Buttons -->
+                                <div class="flex space-x-2 mt-2">
+                                    <button type="button" onclick="copyToClipboard('{{ url($l->slug) }}')" 
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                        Copy URL
+                                    </button>
+                                    
+                                    <button type="button" onclick="generateQRCode('{{ url($l->slug) }}', '{{ $l->name }}')" 
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                                        </svg>
+                                        QR Code
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 md:px-6 py-4">
+                            <div class="flex items-center text-sm text-gray-900">
+                                <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                                <span class="truncate max-w-[120px]">{{ $l->phone }}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 md:px-6 py-4">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-gray-900">{{ $l->clicks }}</span>
+                                <span class="text-xs text-gray-500 ml-1">clicks</span>
+                            </div>
+                        </td>
+                        <td class="px-4 md:px-6 py-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                {{ $l->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $l->is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </td>
+                        <td class="px-4 md:px-6 py-4">
+                            <div class="flex justify-end space-x-2">
+                                <!-- Analytics Button -->
+                                <a href="{{ route('wa-links.analytics', $l) }}" 
+                                   class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    Stats
+                                </a>
+
+                                <!-- Edit Button -->
+                                <a href="{{ route('wa-links.edit', $l) }}" 
+                                   class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Edit
+                                </a>
+
+                                <!-- Delete Button -->
+                                <form action="{{ route('wa-links.destroy', $l) }}" method="POST" 
+                                      onsubmit="return confirm('Are you sure you want to delete this link?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="text-gray-400">
+                                <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <p class="text-lg font-medium text-gray-600">No links created yet</p>
+                                <p class="text-sm text-gray-500 mt-1">Get started by creating your first WhatsApp link</p>
+                                <a href="{{ route('wa-links.create') }}" 
+                                   class="inline-flex items-center px-4 py-2 mt-4 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                                    Create Your First Link
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         <!-- Pagination -->
@@ -416,66 +412,59 @@
             }
         }, 3000);
     }
-
-    // Make QR code function available globally
-    window.generateQRCodeLocal = function(url, title) {
-        generateQRCode(url, title);
-    }
     </script>
 
-    <!-- Responsive Styles -->
+    <!-- Additional CSS for better mobile experience -->
     <style>
+        /* Prevent horizontal scrolling on mobile */
+        body {
+            overflow-x: hidden;
+        }
+        
+        /* Ensure content doesn't overflow on small screens */
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Improve button sizes on mobile */
         @media (max-width: 640px) {
-            .stats-grid > div {
-                min-width: 140px;
+            .mobile-action-buttons button,
+            .mobile-action-buttons a {
+                padding: 8px 12px;
+                font-size: 0.75rem;
             }
             
-            .mobile-action-buttons {
-                flex-wrap: wrap;
+            .mobile-action-buttons form {
+                width: 100%;
             }
             
             .mobile-action-buttons button,
             .mobile-action-buttons a {
-                flex: 1;
-                min-width: 80px;
-                justify-content: center;
+                min-height: 36px;
             }
         }
         
-        @media (min-width: 641px) and (max-width: 768px) {
-            .stats-grid > div {
-                min-width: 160px;
-            }
-        }
-        
-        /* Improve table responsiveness */
-        @media (max-width: 767px) {
-            table th, table td {
-                padding: 8px 4px;
-                font-size: 0.875rem;
+        /* Ensure table is responsive on desktop */
+        @media (min-width: 640px) {
+            .overflow-x-auto {
+                -webkit-overflow-scrolling: touch;
             }
             
-            .action-buttons {
-                flex-direction: column;
-                gap: 4px;
+            table {
+                min-width: 100%;
+                table-layout: auto;
             }
             
-            .action-buttons a, 
-            .action-buttons button,
-            .action-buttons form {
-                width: 100%;
-                justify-content: center;
+            table td, table th {
+                white-space: nowrap;
             }
-        }
-        
-        /* Pagination responsiveness */
-        .pagination {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .pagination li {
-            margin: 2px;
+            
+            /* Allow text truncation in table cells */
+            .max-w-xs {
+                max-width: 12rem;
+            }
         }
     </style>
 @endsection

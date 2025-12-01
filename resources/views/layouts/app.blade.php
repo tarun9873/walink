@@ -277,7 +277,11 @@
                     <span>My Links</span>
                     <span class="ml-auto bg-blue-500 text-xs px-2 py-1 rounded-full">{{ optional(auth()->user())->waLinks()->count() ?? 0 }}</span>
                 </a>
-                <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <a href="{{ route('wa-links.create') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-edit w-5 mr-3"></i>
+                    <span>Create New Link</span>
+                </a>
+                 <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                     <i class="fas fa-user-edit w-5 mr-3"></i>
                     <span>Profile</span>
                 </a>
