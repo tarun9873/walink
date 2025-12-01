@@ -269,6 +269,7 @@
             <nav class="py-4">
                 <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    
                     <span>Dashboard</span>
                 </a>
                 <a href="{{ route('wa-links.index') }}" class="nav-item {{ request()->routeIs('wa-links.*') ? 'active' : '' }}">
@@ -339,15 +340,15 @@
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-900">@yield('page-title', 'Dashboard')</h1>
-                            <p class="text-gray-600">@yield('page-subtitle', 'Welcome back, ' . optional(auth()->user())->name)</p>
+                           <div class="images-logo">
+                        <img src="/images/downloa7_7484d.webp" 
+                             alt="Walive Logo" 
+                             class="block h-6 w-auto" style="height: 59px;width: 114px;"/>
+                    </div>
                         </div>
                         <div class="flex items-center space-x-4">
                             <!-- Notifications -->
-                            <button class="relative p-2 rounded-lg hover:bg-gray-100">
-                                <i class="fas fa-bell text-gray-600"></i>
-                                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                            </button>
+                            
                             
                             <!-- Quick Stats -->
                             <div class="hidden md:flex items-center space-x-4">
