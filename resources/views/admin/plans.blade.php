@@ -390,7 +390,7 @@
             return;
         }
         
-        // Submit the form
+        // Submit the forms
         this.submit();
     });
 </script>
