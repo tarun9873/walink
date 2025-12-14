@@ -337,7 +337,7 @@
         }
     }
 
-    // Form validation and debug
+    // Form validation and debugs
     document.getElementById('planForm').addEventListener('submit', function(e) {
         console.log('Form submitted');
         
