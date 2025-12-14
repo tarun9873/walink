@@ -3,7 +3,7 @@
 @section('content')
 <div class="px-4 py-6">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Plans Management Dashboard</h2>
+        <h2 class="text-2xl font-bold text-gray-900">Plans Management</h2>
         <button onclick="document.getElementById('createPlanModal').classList.remove('hidden')"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
             <i class="fas fa-plus mr-2"></i>Create New Plan
