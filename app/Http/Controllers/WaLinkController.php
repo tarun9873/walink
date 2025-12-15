@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\WaLink;
 use App\Models\WaLinkClick;
+use App\Models\Subscription;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class WaLinkController extends Controller
@@ -14,12 +17,12 @@ class WaLinkController extends Controller
     public function __construct()
     {
         // Protect everything except the public redirect route
-        $this->middleware('auth')->except('redirect');
+        $this->middleware('auth')->except('redirect', 'notfound');
         
-        // Apply subscription middleware to all methods except redirect
-        $this->middleware('subscription')->except('redirect');
+        // Apply subscription middleware to store method
+        $this->middleware('subscription')->only('store');
         
-        // Apply link limit middleware only to create and store
+        // Apply link limit middleware to create and store
         $this->middleware('link.limit')->only(['create', 'store']);
     }
 
@@ -29,8 +32,16 @@ class WaLinkController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $subscription = $user->activeSubscription;
-        $remainingLinks = $user->remaining_links;
+        
+        // Get subscription and remaining links
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->with('plan')
+            ->first();
+            
+        // Calculate remaining links
+        $remainingLinks = $user->remaining_links ?? 0;
         
         $links = $user
             ->waLinks()
@@ -46,7 +57,15 @@ class WaLinkController extends Controller
      */
     public function create()
     {
-        $remainingLinks = auth()->user()->remaining_links;
+        $user = auth()->user();
+        
+        // Check if user can create more links
+        if (!$user->canCreateMoreLinks()) {
+            return redirect()->route('pricing')
+                ->with('error', 'You have reached your link limit. Please upgrade your plan.');
+        }
+        
+        $remainingLinks = $user->remaining_links;
         return view('wa_links.create', compact('remainingLinks'));
     }
 
@@ -57,10 +76,55 @@ class WaLinkController extends Controller
     {
         $user = auth()->user();
         
-        // Double-check link limit (middleware already checks, but this is backup)
+        // TRIPLE CHECK: Verify user can create more links
         if (!$user->canCreateMoreLinks()) {
-            return redirect()->route('pricing')
-                ->with('error', 'You have reached your link limit. Please upgrade your plan.');
+            $activeCount = $user->active_links_count;
+            $totalAllowed = $user->total_allowed_links;
+            
+            if ($user->hasActiveSubscription()) {
+                $message = "⚠️ आपकी लिंक सीमा पूरी हो गई है! ({$activeCount}/{$totalAllowed})";
+            } else {
+                $message = "❌ आपकी सब्सक्रिप्शन समाप्त हो गई है! आप केवल 1 लिंक बना सकते हैं।";
+            }
+            
+            return redirect()->route('dashboard')
+                ->with('error', $message)
+                ->with('limit_reached', true);
+        }
+
+        // DOUBLE CHECK: Verify subscription and link limit (additional check)
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->first();
+            
+        // Count active links
+        $activeLinksCount = WaLink::where('user_id', $user->id)
+            ->where('is_active', 1)
+            ->count();
+            
+        // Determine limits
+        if (!$subscription) {
+            // Free plan - expired subscription
+            $maxAllowed = 1;
+            
+            if ($activeLinksCount >= $maxAllowed) {
+                return redirect()->route('dashboard')
+                    ->with('error', '❌ आपकी सब्सक्रिप्शन समाप्त हो गई है! आप केवल 1 लिंक बना सकते हैं।')
+                    ->with('subscription_expired', true);
+            }
+        } else {
+            // Active subscription
+            $plan = Plan::find($subscription->plan_id);
+            $planLimit = $plan ? $plan->links_limit : 1;
+            $extraLinks = $subscription->extra_links ?? 0;
+            $totalLimit = $planLimit + $extraLinks;
+            
+            if ($activeLinksCount >= $totalLimit) {
+                return redirect()->route('dashboard')
+                    ->with('error', '⚠️ आपकी लिंक सीमा पूरी हो गई है! अधिक लिंक के लिए अपग्रेड करें।')
+                    ->with('limit_reached', true);
+            }
         }
 
         $validated = $request->validate([
@@ -161,7 +225,6 @@ class WaLinkController extends Controller
 
     /**
      * Delete link (hard delete)
-     * If you prefer soft delete, implement SoftDeletes in model & migration.
      */
     public function destroy(WaLink $waLink)
     {
@@ -203,10 +266,10 @@ class WaLinkController extends Controller
     {
         $waLink = WaLink::findOrFail($id);
         
-           // Check if user owns this link (manual check without policy)
-    if (auth()->id() !== $waLink->user_id) {
-        abort(403, 'Unauthorized action.');
-    }
+        // Check if user owns this link
+        if (auth()->id() !== $waLink->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
         
         // Check if clicks relationship exists
         if (!method_exists($waLink, 'clicks')) {
@@ -244,14 +307,14 @@ class WaLinkController extends Controller
             $uniqueVisitors = $waLink->clicks()->distinct('ip_address')->count('ip_address');
         }
 
-          return view('wa_links.analytics', compact(
-        'waLink', 
-        'dailyClicks', 
-        'countryClicks', 
-        'deviceClicks',
-        'totalClicks',
-        'uniqueVisitors'
-    ));
+        return view('wa_links.analytics', compact(
+            'waLink', 
+            'dailyClicks', 
+            'countryClicks', 
+            'deviceClicks',
+            'totalClicks',
+            'uniqueVisitors'
+        ));
     }
 
     /**
@@ -358,6 +421,6 @@ class WaLinkController extends Controller
      */
     public function notfound()
     {
-        return view('wa-links.notfound');
+        return view('wa_links.notfound');
     }
 }

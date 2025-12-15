@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -18,9 +19,14 @@ class AdminController extends Controller
     {
         $stats = [
             'total_users' => User::count(),
-            'active_subscriptions' => Subscription::where('status', 'active')->count(),
+            'active_subscriptions' => Subscription::where('status', 'active')
+                ->where('expires_at', '>', now())
+                ->count(),
             'total_plans' => Plan::where('is_active', true)->count(),
             'revenue_today' => Subscription::whereDate('created_at', today())->count() * 299,
+            'revenue_this_month' => $this->calculateMonthlyRevenue(),
+            'total_links' => \App\Models\WaLink::count(),
+            'active_links' => \App\Models\WaLink::where('is_active', true)->count(),
         ];
 
         $recentSubscriptions = Subscription::with(['user', 'plan'])
@@ -28,7 +34,43 @@ class AdminController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentSubscriptions'));
+        // Add days remaining to each subscription
+        foreach ($recentSubscriptions as $subscription) {
+            if ($subscription->expires_at) {
+                $expiry = Carbon::parse($subscription->expires_at);
+                $now = Carbon::now();
+                $subscription->days_remaining = $now->greaterThan($expiry) ? 0 : $now->diffInDays($expiry);
+            } else {
+                $subscription->days_remaining = null;
+            }
+        }
+
+        // Get recent payments if Payment model exists
+        try {
+            $recentPayments = class_exists('\App\Models\Payment') 
+                ? \App\Models\Payment::with(['user', 'plan'])
+                    ->where('status', 'success')
+                    ->latest()
+                    ->take(5)
+                    ->get()
+                : collect();
+        } catch (\Exception $e) {
+            $recentPayments = collect();
+        }
+
+        return view('admin.dashboard', compact(
+            'stats', 
+            'recentSubscriptions',
+            'recentPayments'
+        ));
+    }
+
+    // Calculate monthly revenue
+    private function calculateMonthlyRevenue()
+    {
+        return Subscription::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count() * 299;
     }
 
     // Users Management
@@ -42,27 +84,15 @@ class AdminController extends Controller
     }
 
     // Plans Management
-    // public function plans()
-    // {
-    //     $plans = Plan::latest()->get();
-    //     return view('admin.plans', compact('plans'));
-    // }
-
-    // Plans Management
-public function plans()
-{
-    $plans = Plan::orderBy('sort_order', 'asc')
-                ->orderBy('created_at', 'desc')
-                ->get();
-    
-    // Check if plans have is_popular column
-    if ($plans->count() > 0) {
-        $firstPlan = $plans->first();
-        \Log::info('First Plan:', $firstPlan->toArray());
+    public function plans()
+    {
+        $plans = Plan::orderBy('sort_order', 'asc')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+        
+        return view('admin.plans', compact('plans'));
     }
-    
-    return view('admin.plans', compact('plans'));
-}
+
     // Assign Plan Form
     public function assignPlanForm($userId = null)
     {
@@ -96,12 +126,14 @@ public function plans()
                        ->update(['status' => 'inactive']);
 
             // Create new subscription with all required fields
+            $expiresAt = now()->addDays($request->duration_days);
+            
             $subscriptionData = [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'starts_at' => now(),
-                'expires_at' => now()->addDays($request->duration_days),
-                'ends_at' => now()->addDays($request->duration_days),
+                'expires_at' => $expiresAt,
+                'ends_at' => $expiresAt,
                 'status' => 'active',
                 'assigned_by_admin' => true,
                 'admin_id' => Auth::id(),
@@ -116,7 +148,13 @@ public function plans()
 
             DB::commit();
 
-            return redirect()->route('admin.users')->with('success', "{$plan->name} plan successfully assigned to {$user->name} for {$request->duration_days} days.");
+            // Calculate days remaining for the new subscription
+            $daysRemaining = Carbon::now()->diffInDays($expiresAt);
+
+            return redirect()->route('admin.users')->with('success', 
+                "{$plan->name} plan successfully assigned to {$user->name} for {$request->duration_days} days. " .
+                "($daysRemaining days remaining)"
+            );
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -157,7 +195,12 @@ public function plans()
             'updated_at' => now()
         ]);
 
-        return back()->with('success', "Plan extended by {$request->extension_days} days. New expiry: {$newExpiryDate->format('d M Y')}");
+        $daysRemaining = Carbon::now()->diffInDays($newExpiryDate);
+
+        return back()->with('success', 
+            "Plan extended by {$request->extension_days} days. " .
+            "New expiry: {$newExpiryDate->format('d M Y')} ($daysRemaining days remaining)"
+        );
     }
 
     // Extend Plan (Alternative method with User object)
@@ -180,11 +223,16 @@ public function plans()
             'updated_at' => now()
         ]);
         
-        return back()->with('success', 'Plan extended successfully!');
+        $daysRemaining = Carbon::now()->diffInDays($newExpiryDate);
+        
+        return back()->with('success', 
+            "Plan extended by {$request->extend_days} days. " .
+            "($daysRemaining days remaining)"
+        );
     }
 
     // Add Links to User - FIXED VERSION
-     public function addLinks(User $user, Request $request)
+    public function addLinks(User $user, Request $request)
     {
         Log::info('🟢 ADD LINKS STARTED', [
             'user_id' => $user->id,
@@ -275,12 +323,23 @@ public function plans()
             return back()->with('error', 'User has no active subscription!');
         }
         
+        $newPlan = Plan::findOrFail($request->new_plan_id);
+        
         $subscription->update([
             'plan_id' => $request->new_plan_id,
             'updated_at' => now()
         ]);
         
-        return back()->with('success', 'Plan upgraded successfully!');
+        // Calculate days remaining if expiry exists
+        $daysRemaining = null;
+        if ($subscription->expires_at) {
+            $daysRemaining = Carbon::now()->diffInDays($subscription->expires_at);
+        }
+        
+        return back()->with('success', 
+            "Plan upgraded to {$newPlan->name} successfully!" . 
+            ($daysRemaining ? " ($daysRemaining days remaining)" : "")
+        );
     }
 
     // Cancel User Subscription
@@ -292,13 +351,15 @@ public function plans()
             return back()->with('error', 'User does not have an active subscription.');
         }
 
+        $planName = $user->activeSubscription->plan->name ?? 'Unknown Plan';
+        
         $user->activeSubscription->update([
             'status' => 'cancelled',
             'ends_at' => now(),
             'updated_at' => now()
         ]);
 
-        return back()->with('success', 'Subscription cancelled successfully.');
+        return back()->with('success', "{$planName} subscription cancelled successfully.");
     }
 
     // Cancel Subscription (Alternative method with User object)
@@ -307,131 +368,130 @@ public function plans()
         $subscription = $user->activeSubscription;
         
         if ($subscription) {
+            $planName = $subscription->plan->name ?? 'Unknown Plan';
             $subscription->update([
                 'status' => 'cancelled', 
                 'ends_at' => now(),
                 'updated_at' => now()
             ]);
-            return back()->with('success', 'Subscription cancelled successfully!');
+            return back()->with('success', "{$planName} subscription cancelled successfully!");
         }
         
         return back()->with('error', 'No active subscription found!');
     }
 
-    // Create New Plan
-    // Create New Plan - FIXED VERSION
-// Create New Plan - FIXED VERSION
-// Create New Plan - UPDATED VERSION
-public function createPlan(Request $request)
-{
-    \Log::info('🎯 CREATE PLAN FORM DATA:', $request->all());
-    
-    $request->validate([
-        'name' => 'required|string|max:255|unique:plans,name',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'links_limit' => 'required|integer|min:1',
-        'duration_days' => 'required|integer|min:1',
-        'billing_cycle' => 'required|in:month,year,custom', // Keep this
-        'features' => 'required|array',
-        'is_active' => 'nullable|boolean',
-        'is_popular' => 'nullable|boolean',
-        'sort_order' => 'nullable|integer'
-    ]);
-
-    try {
-        // Generate a unique slug
-        $slug = \Str::slug($request->name);
-        $originalSlug = $slug;
-        $counter = 1;
-
-        while (Plan::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
-            $counter++;
-        }
-
-        // Convert features array properly
-        $featuresArray = [];
-        if (is_array($request->features) && isset($request->features[0])) {
-            $featuresString = $request->features[0];
-            $featuresArray = array_filter(array_map('trim', explode("\n", $featuresString)));
-        }
-
-        $planData = [
-            'name' => $request->name,
-            'slug' => $slug,
-            'description' => $request->description,
-            'price' => $request->price,
-            'links_limit' => $request->links_limit,
-            'duration_days' => $request->duration_days,
-            'billing_cycle' => $request->billing_cycle, // This is important
-            'features' => $featuresArray,
-            'is_active' => $request->has('is_active') ? (bool)$request->is_active : true,
-            'is_popular' => $request->has('is_popular') ? (bool)$request->is_popular : false,
-            'sort_order' => $request->sort_order ?? 0,
-            'created_at' => now(),
-            'updated_at' => now()
-        ];
-
-        \Log::info('📦 PLAN DATA TO SAVE:', $planData);
-
-        $plan = Plan::create($planData);
-
-        \Log::info('✅ PLAN CREATED SUCCESSFULLY:', ['plan_id' => $plan->id]);
-
-        return redirect()->route('admin.plans')->with('success', 'Plan created successfully.');
-
-    } catch (\Exception $e) {
-        \Log::error('❌ PLAN CREATION FAILED:', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+    // Create New Plan - UPDATED VERSION
+    public function createPlan(Request $request)
+    {
+        \Log::info('🎯 CREATE PLAN FORM DATA:', $request->all());
+        
+        $request->validate([
+            'name' => 'required|string|max:255|unique:plans,name',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'links_limit' => 'required|integer|min:1',
+            'duration_days' => 'required|integer|min:1',
+            'billing_cycle' => 'required|in:month,year,custom',
+            'features' => 'required|array',
+            'is_active' => 'nullable|boolean',
+            'is_popular' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer'
         ]);
-        
-        return back()->with('error', 'Failed to create plan: ' . $e->getMessage())
-                     ->withInput();
-    }
-}
 
-// Add this method to your AdminController.php
+        try {
+            // Generate a unique slug
+            $slug = \Str::slug($request->name);
+            $originalSlug = $slug;
+            $counter = 1;
 
-// Delete Plan
-public function deletePlan($id)
-{
-    try {
-        $plan = Plan::findOrFail($id);
-        
-        // Check if plan has any subscriptions
-        $subscriptionCount = $plan->subscriptions()->count();
-        
-        if ($subscriptionCount > 0) {
-            return redirect()->route('admin.plans')
-                ->with('error', "Cannot delete plan '{$plan->name}'. It has {$subscriptionCount} active subscription(s).");
-        }
-        
-        $planName = $plan->name;
-        $plan->delete();
-        
-        return redirect()->route('admin.plans')
-            ->with('success', "Plan '{$planName}' deleted successfully.");
+            while (Plan::where('slug', $slug)->exists()) {
+                $slug = $originalSlug . '-' . $counter;
+                $counter++;
+            }
+
+            // Convert features array properly
+            $featuresArray = [];
+            if (is_array($request->features) && isset($request->features[0])) {
+                $featuresString = $request->features[0];
+                $featuresArray = array_filter(array_map('trim', explode("\n", $featuresString)));
+            }
+
+            $planData = [
+                'name' => $request->name,
+                'slug' => $slug,
+                'description' => $request->description,
+                'price' => $request->price,
+                'links_limit' => $request->links_limit,
+                'duration_days' => $request->duration_days,
+                'billing_cycle' => $request->billing_cycle,
+                'features' => $featuresArray,
+                'is_active' => $request->has('is_active') ? (bool)$request->is_active : true,
+                'is_popular' => $request->has('is_popular') ? (bool)$request->is_popular : false,
+                'sort_order' => $request->sort_order ?? 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ];
+
+            \Log::info('📦 PLAN DATA TO SAVE:', $planData);
+
+            $plan = Plan::create($planData);
+
+            \Log::info('✅ PLAN CREATED SUCCESSFULLY:', ['plan_id' => $plan->id]);
+
+            return redirect()->route('admin.plans')->with('success', 'Plan created successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('❌ PLAN CREATION FAILED:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-    } catch (\Exception $e) {
-        \Log::error('Plan deletion failed: ' . $e->getMessage());
-        return redirect()->route('admin.plans')
-            ->with('error', 'Failed to delete plan: ' . $e->getMessage());
+            return back()->with('error', 'Failed to create plan: ' . $e->getMessage())
+                         ->withInput();
+        }
     }
-}
+
+    // Delete Plan
+    public function deletePlan($id)
+    {
+        try {
+            $plan = Plan::findOrFail($id);
+            
+            // Check if plan has any subscriptions
+            $subscriptionCount = $plan->subscriptions()->count();
+            
+            if ($subscriptionCount > 0) {
+                return redirect()->route('admin.plans')
+                    ->with('error', "Cannot delete plan '{$plan->name}'. It has {$subscriptionCount} active subscription(s).");
+            }
+            
+            $planName = $plan->name;
+            $plan->delete();
+            
+            return redirect()->route('admin.plans')
+                ->with('success', "Plan '{$planName}' deleted successfully.");
+                
+        } catch (\Exception $e) {
+            \Log::error('Plan deletion failed: ' . $e->getMessage());
+            return redirect()->route('admin.plans')
+                ->with('error', 'Failed to delete plan: ' . $e->getMessage());
+        }
+    }
 
     // Toggle Plan Status
     public function togglePlanStatus($planId)
     {
         $plan = Plan::findOrFail($planId);
+        $oldStatus = $plan->is_active;
+        $newStatus = !$oldStatus;
+        
         $plan->update([
-            'is_active' => !$plan->is_active,
+            'is_active' => $newStatus,
             'updated_at' => now()
         ]);
 
-        $status = $plan->is_active ? 'activated' : 'deactivated';
-        return back()->with('success', "Plan {$status} successfully.");
+        $status = $newStatus ? 'activated' : 'deactivated';
+        return back()->with('success', "Plan '{$plan->name}' {$status} successfully.");
     }
 
     // Admin User Management Dashboard
@@ -441,6 +501,96 @@ public function deletePlan($id)
         $plans = Plan::where('is_active', true)->get();
         
         return view('admin.user-management', compact('users', 'plans'));
+    }
+
+    // Subscriptions Management
+    public function subscriptions()
+    {
+        $subscriptions = Subscription::with(['user', 'plan'])
+            ->latest()
+            ->paginate(20);
+            
+        // Add days remaining to each subscription
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->expires_at) {
+                $expiry = Carbon::parse($subscription->expires_at);
+                $now = Carbon::now();
+                $subscription->days_remaining = $now->greaterThan($expiry) ? 0 : $now->diffInDays($expiry);
+            } else {
+                $subscription->days_remaining = null;
+            }
+        }
+        
+        return view('admin.subscriptions', compact('subscriptions'));
+    }
+
+    // View User Details
+    public function viewUser($id)
+    {
+        $user = User::with([
+            'subscriptions.plan',
+            'waLinks'
+        ])->findOrFail($id);
+        
+        // Calculate subscription days remaining
+        if ($user->activeSubscription && $user->activeSubscription->expires_at) {
+            $expiry = Carbon::parse($user->activeSubscription->expires_at);
+            $now = Carbon::now();
+            $user->activeSubscription->days_remaining = $now->greaterThan($expiry) ? 0 : $now->diffInDays($expiry);
+        }
+        
+        $plans = Plan::where('is_active', true)->get();
+        
+        return view('admin.view-user', compact('user', 'plans'));
+    }
+
+    // Get Revenue Chart Data (AJAX)
+    public function getRevenueData(Request $request)
+    {
+        $range = $request->input('range', 'monthly');
+
+        switch ($range) {
+            case 'weekly':
+                $data = Subscription::select(
+                        DB::raw('DATE(created_at) as date'),
+                        DB::raw('COUNT(*) * 299 as revenue')
+                    )
+                    ->where('created_at', '>=', now()->subDays(7))
+                    ->groupBy('date')
+                    ->orderBy('date')
+                    ->get();
+                break;
+
+            case 'monthly':
+                $data = Subscription::select(
+                        DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                        DB::raw('COUNT(*) * 299 as revenue')
+                    )
+                    ->where('created_at', '>=', now()->subMonths(6))
+                    ->groupBy('month')
+                    ->orderBy('month')
+                    ->get();
+                break;
+
+            case 'yearly':
+                $data = Subscription::select(
+                        DB::raw('YEAR(created_at) as year'),
+                        DB::raw('COUNT(*) * 299 as revenue')
+                    )
+                    ->where('created_at', '>=', now()->subYears(3))
+                    ->groupBy('year')
+                    ->orderBy('year')
+                    ->get();
+                break;
+
+            default:
+                $data = collect();
+        }
+
+        return response()->json([
+            'labels' => $data->pluck($range === 'monthly' ? 'month' : ($range === 'yearly' ? 'year' : 'date'))->toArray(),
+            'revenue' => $data->pluck('revenue')->toArray(),
+        ]);
     }
 
     // NEW: Debug method to check database structure

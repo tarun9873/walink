@@ -1,9 +1,6 @@
 @extends('pricing.base')
 
 @section('content')
-
-
-
     <!-- Main Content -->
     <main class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,29 +97,19 @@
                                     {{ auth()->check() ? 'Go to Dashboard' : 'Get Started Free' }}
                                 </a>
                             @else
-                                <!-- Paid Plan - Check auth -->
-                                @auth
-                                    <!-- User is logged in - Subscribe -->
-                                    <form action="{{ route('subscribe', $plan) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" 
-                                                class="w-full whatsapp-bg-gradient
-                                                       text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
-                                                       hover:scale-105 hover:shadow-xl">
-                                            <i class="fas fa-bolt mr-2"></i>
-                                            Subscribe Now
-                                        </button>
-                                    </form>
-                                @else
-                                    <!-- User not logged in - Redirect to register -->
-                                    <a href="https://walive.link/pricing-buy" 
-                                       class="block w-full whatsapp-bg-gradient
-                                              text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
-                                              hover:scale-105 hover:shadow-xl">
-                                        <i class="fas fa-bolt mr-2"></i>
-                                        Sign Up to Subscribe
-                                    </a>
-                                @endauth
+                                <!-- Paid Plan - DIRECT WhatsApp link -->
+                                <a href="https://walive.link/pricing-buy" 
+                                   target="_blank"
+                                   class="block w-full whatsapp-bg-gradient
+                                          text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
+                                          hover:scale-105 hover:shadow-xl">
+                                    <i class="fab fa-whatsapp mr-2"></i>
+                                    Buy Now
+                                </a>
+                                
+                                <p class="text-xs text-gray-500 text-center mt-2">
+                                    Click to purchase on WhatsApp
+                                </p>
                             @endif
                         </div>
                     </div>
@@ -270,5 +257,4 @@
             </div>
         </div>
     </main>
-
- @endsection
+@endsection

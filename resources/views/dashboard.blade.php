@@ -9,37 +9,81 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Subscription Info (UPDATED WITH EXTRA LINKS) --}}
+            {{-- Success/Error Messages --}}
+            @if(session('success'))
+                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- @if(session('error'))
+                <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif --}}
+
+            @if(session('limit_reached'))
+                <div class="mb-6 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+                    <strong>⚠️ Limit Reached!</strong> You have reached your link limit. 
+                    @if(!$subscription || $subscription->status != 'active')
+                        <a href="{{ route('pricing') }}" class="font-bold underline ml-2">Upgrade Now</a>
+                    @else
+                        <a href="{{ route('pricing') }}" class="font-bold underline ml-2">Buy Extra Links</a>
+                    @endif
+                </div>
+            @endif
+
+            @if(session('subscription_expired'))
+                <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong>❌ Subscription Expired!</strong> Your subscription has expired. You can only create 5 links. 
+                    <a href="{{ route('pricing') }}" class="font-bold underline ml-2">Renew Now</a>
+                </div>
+            @endif
+
+            {{-- Variables Setup --}}
             @php
-                // Use data passed from controller
+                // Use data passed from controller with proper fallbacks
                 $planName = $planName ?? 'Free Plan';
                 $planLimit = $planLimit ?? 5;
                 $extraLinks = $extraLinks ?? 0;
                 $totalLimit = $totalLimit ?? ($planLimit + $extraLinks);
-                $usedLinks = $usedLinks ?? 0;
-                $remainingLinks = $remainingLinks ?? max($totalLimit - $usedLinks, 0);
-                $totalLinks = $totalLinks ?? $usedLinks;
-                $usagePercentage = $totalLimit > 0 ? ($usedLinks / max($totalLimit,1) * 100) : ($usedLinks ? 100 : 0);
-
+                $activeLinksCount = $activeLinksCount ?? 0;
+                $remainingLinks = $remainingLinks ?? max($totalLimit - $activeLinksCount, 0);
+                $totalLinks = $totalLinks ?? $activeLinksCount;
+                $totalUsagePercentage = $totalUsagePercentage ?? ($totalLimit > 0 ? min(100, ($activeLinksCount / $totalLimit) * 100) : 0);
+                
                 // Calculate breakdown
-                $planLinksUsed = $planLinksUsed ?? min($usedLinks, $planLimit);
-                $extraLinksUsed = $extraLinksUsed ?? max(0, $usedLinks - $planLimit);
+                $planLinksUsed = $planLinksUsed ?? min($activeLinksCount, $planLimit);
+                $extraLinksUsed = $extraLinksUsed ?? max(0, $activeLinksCount - $planLimit);
+                
+                // Days remaining handling with proper fallback
+                $daysRemaining = $daysRemaining ?? 0;
+                $expiryDate = $expiryDate ?? null;
+                
+                // Can create more links
+                $canCreateMoreLinks = $canCreateMoreLinks ?? ($activeLinksCount < $totalLimit);
             @endphp
 
+            {{-- Subscription Info --}}
             @if($subscription && $subscription->status == 'active')
             <div class="bg-gradient-to-r from-blue-500 to-purple-600 overflow-hidden shadow-sm sm:rounded-lg p-6 text-white mb-6">
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="text-lg font-bold">{{ $planName }}</h3>
                         <p class="text-blue-100">
-                            @if($daysRemaining && $expiryDate)
+                            @if($expiryDate)
+                                @php
+                                    $expiryDateFormatted = \Carbon\Carbon::parse($expiryDate);
+                                    $daysRemaining = $daysRemaining ?? now()->diffInDays($expiryDateFormatted, false);
+                                @endphp
+                                
                                 @if($daysRemaining > 0)
-                                    Expires in {{ $daysRemaining }} days ({{ $expiryDate->format('M d, Y') }})
+                                    Expires in {{ $daysRemaining }} days ({{ $expiryDateFormatted->format('M d, Y') }})
                                 @else
-                                    Expired on {{ $expiryDate->format('M d, Y') }}
+                                    Expired on {{ $expiryDateFormatted->format('M d, Y') }}
                                 @endif
                             @else
-                                Subscription details not available
+                                Active Subscription
                             @endif
                         </p>
                         
@@ -75,7 +119,7 @@
             </div>
             @endif
 
-            {{-- Statistics Cards (UPDATED) --}}
+            {{-- Statistics Cards --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {{-- Total Limit Card --}}
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-purple-500">
@@ -93,7 +137,7 @@
                     </div>
                 </div>
 
-                {{-- Used Links Card --}}
+                {{-- Active Links Card --}}
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-green-500">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
@@ -101,7 +145,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-600">Active Links</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $usedLinks }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $activeLinksCount }}</p>
                             @if($extraLinks > 0 && $extraLinksUsed > 0)
                             <p class="text-xs text-gray-500">{{ $planLinksUsed }} plan + {{ $extraLinksUsed }} extra</p>
                             @endif
@@ -136,17 +180,17 @@
                 </div>
             </div>
 
-            {{-- Progress Bar (UPDATED) --}}
+            {{-- Progress Bar --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-gray-900">Link Usage Progress</h3>
-                    <span class="text-sm font-medium text-gray-600">{{ $usedLinks }}/{{ $totalLimit == 0 ? '∞' : $totalLimit }} ({{ round($totalUsagePercentage ?? $usagePercentage) }}%)</span>
+                    <span class="text-sm font-medium text-gray-600">{{ $activeLinksCount }}/{{ $totalLimit == 0 ? '∞' : $totalLimit }} ({{ round($totalUsagePercentage) }}%)</span>
                 </div>
                 
                 {{-- Main Progress Bar --}}
                 <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
                     <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" 
-                         style="width: {{ $totalLimit == 0 ? 100 : min(100, max(0, ($totalUsagePercentage ?? $usagePercentage))) }}%"></div>
+                         style="width: {{ $totalLimit == 0 ? 100 : min(100, max(0, $totalUsagePercentage)) }}%"></div>
                 </div>
                 
                 {{-- Breakdown Progress Bars --}}
@@ -176,26 +220,24 @@
                 </div>
                 @else
                 <div class="flex justify-between text-sm text-gray-600 mt-2">
-                    <span>{{ $usedLinks }} used</span>
+                    <span>{{ $activeLinksCount }} used</span>
                     <span>{{ $totalLimit == 0 ? 'Unlimited' : $remainingLinks }} remaining</span>
                 </div>
                 @endif
             </div>
 
-            {{-- Account Information (UPDATED) --}}
+           
+
+         
+
+            {{-- Account Information --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium text-gray-900">Account Information</h3>
-                        @if($remainingLinks > 0 || $totalLimit == 0)
-                        <a href="{{ route('wa-links.index') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            <i class="fas fa-eye mr-2"></i>View All Links
+                        <a href="{{ route('profile.edit') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            <i class="fas fa-user-edit mr-2"></i>Edit Profile
                         </a>
-                        @else
-                        <button class="bg-gray-400 cursor-not-allowed text-white font-bold py-2 px-4 rounded" disabled>
-                            <i class="fas fa-plus mr-2"></i>Plan Limit Reached
-                        </button>
-                        @endif
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -216,7 +258,7 @@
                             </div>
                         </div>
 
-                        {{-- Subscription Information (UPDATED) --}}
+                        {{-- Subscription Information --}}
                         <div class="space-y-4">
                             <h4 class="text-md font-semibold text-gray-700 border-b pb-2">Subscription Details</h4>
                             <div class="flex justify-between">
@@ -238,14 +280,17 @@
                             </div>
                             @endif
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Links Used:</span>
-                                <span class="font-medium">{{ $usedLinks }} / {{ $totalLimit == 0 ? 'Unlimited' : $totalLimit }}</span>
+                                <span class="text-gray-600">Active Links:</span>
+                                <span class="font-medium">{{ $activeLinksCount }} / {{ $totalLimit == 0 ? 'Unlimited' : $totalLimit }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Status:</span>
                                 <span class="font-medium">
                                     @if($subscription && $subscription->status == 'active')
                                         <span class="text-green-600">Active</span>
+                                        @if($daysRemaining > 0)
+                                            ({{ $daysRemaining }} days remaining)
+                                        @endif
                                     @else
                                         <span class="text-yellow-600">Free Plan</span>
                                     @endif
@@ -254,28 +299,20 @@
                         </div>
                     </div>
 
-                    {{-- Quick Actions --}}
-                    <div class="mt-8 pt-6 border-t">
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">Quick Actions</h4>
-                        <div class="flex flex-wrap gap-4">
-                            <a href="{{ route('profile.edit') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-user-edit mr-2"></i>Edit Profile
-                            </a>
-                            @if(!$subscription || $subscription->status != 'active')
-                            <a href="{{ route('pricing') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-crown mr-2"></i>Upgrade Plan
-                            </a>
-                            @endif
-                            @if($remainingLinks > 0 || $totalLimit == 0)
-                            <a href="{{ route('wa-links.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-plus mr-2"></i>Create New Link
-                            </a>
-                            @endif
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
 
         </div>
     </div>
+
+    <script>
+    // Auto-hide alerts after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.bg-green-100, .bg-red-100, .bg-yellow-100');
+        alerts.forEach(alert => {
+            alert.style.display = 'none';
+        });
+    }, 5000);
+    </script>
 @endsection

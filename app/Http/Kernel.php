@@ -63,8 +63,8 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-            'subscription' => \App\Http\Middleware\CheckSubscription::class,
-    'link.limit' => \App\Http\Middleware\CheckLinkLimit::class,
-    'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'subscription' => \App\Http\Middleware\CheckSubscription::class,
+        'link.limit' => \App\Http\Middleware\CheckLinkLimit::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
 }

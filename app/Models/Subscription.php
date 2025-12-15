@@ -63,4 +63,23 @@ class Subscription extends Model
                     ->where('status', 'active')
                     ->where('expires_at', '>', now());
     }
+    public function getDaysRemainingAttribute()
+    {
+        $expiry = Carbon::parse($this->expires_at);
+        $now = Carbon::now();
+        
+        if ($now->greaterThan($expiry)) {
+            return 0;
+        }
+        
+        return $now->diffInDays($expiry);
+    }
+    
+    /**
+     * Check if subscription is expired
+     */
+    public function getIsExpiredAttribute()
+    {
+        return Carbon::now()->greaterThan(Carbon::parse($this->expires_at));
+    }
 }

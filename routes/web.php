@@ -28,19 +28,15 @@ Route::get('/about', function () {
     return view('pricing.about');
 })->name('about');
 
-Route::get('/link-not-found', function () {
-    return view('wa_links.notfound');
-})->name('wa-links.notfound');
+Route::get('/link-not-found', [WaLinkController::class, 'notfound'])->name('wa-links.notfound');
 
 // ===================================================
 // 3️⃣ USER DASHBOARD (Auth required)
 // ===================================================
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
 
-
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 // ===================================================
 // 4️⃣ PROFILE ROUTES
 // ===================================================
@@ -59,35 +55,28 @@ Route::middleware('auth')->group(function () {
     Route::get('/subscription/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.cancel');
 });
 
-
-
-
 // ===================================================
 // 6️⃣ WA-LINKS ROUTES (Protected)
 // ===================================================
-Route::middleware(['auth', 'verified', 'subscription'])->group(function () {
-
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Index, show, edit, update, destroy - basic auth only
     Route::get('/wa-links', [WaLinkController::class, 'index'])->name('wa-links.index');
     Route::get('/wa-links/{waLink}/edit', [WaLinkController::class, 'edit'])->name('wa-links.edit');
     Route::put('/wa-links/{waLink}', [WaLinkController::class, 'update'])->name('wa-links.update');
     Route::delete('/wa-links/{waLink}', [WaLinkController::class, 'destroy'])->name('wa-links.destroy');
-
-    // Create/Store with link limit
-    Route::middleware('link.limit')->group(function () {
+    
+    // Analytics
+    Route::get('/wa-links/{id}/analytics', [WaLinkController::class, 'analytics'])->name('wa-links.analytics');
+    
+    // Create and Store with subscription and link limit check
+    Route::middleware(['subscription', 'link.limit'])->group(function () {
         Route::get('/wa-links/create', [WaLinkController::class, 'create'])->name('wa-links.create');
         Route::post('/wa-links', [WaLinkController::class, 'store'])->name('wa-links.store');
     });
 });
 
-
-Route::get('/wa-links/{id}/analytics', [WaLinkController::class, 'analytics'])->name('wa-links.analytics');
-Route::resource('wa-links', WaLinkController::class);
-
 // ===================================================
-// 8️⃣ ADMIN ROUTES (NEW - Add before catch-all slug)
-// ===================================================
-// ===================================================
-// 8️⃣ ADMIN ROUTES (NEW - Add before catch-all slug)
+// 7️⃣ ADMIN ROUTES
 // ===================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
@@ -100,10 +89,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
     Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');
     Route::post('/toggle-plan/{plan}', [AdminController::class, 'togglePlanStatus'])->name('toggle-plan');
-    Route::delete('/plans/{plan}/delete', [AdminController::class, 'deletePlan'])->name('delete-plan'); // Add this line
+    Route::delete('/plans/{plan}/delete', [AdminController::class, 'deletePlan'])->name('delete-plan');
     
     // Subscriptions Management
     Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
+    // View User Details
+    Route::get('/users/{id}', [AdminController::class, 'viewUser'])->name('view-user');
     
     // User Subscription Actions
     Route::post('/users/{user}/add-links', [AdminController::class, 'addLinks'])->name('add-links');
@@ -117,6 +108,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Cancel Subscription
     Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
 });
+
 // Home route redirect to admin dashboard if admin
 Route::get('/home', function () {
     if (auth()->check() && auth()->user()->email === 'ak3400988@gmail.com') {
@@ -126,7 +118,7 @@ Route::get('/home', function () {
 });
 
 // ===================================================
-// 7️⃣ CATCH-ALL SLUG (ALWAYS LAST!)
+// 8️⃣ CATCH-ALL SLUG (ALWAYS LAST!)
 // ===================================================
 Route::get('/{slug}', [WaLinkController::class, 'redirect'])
     ->where('slug', '[A-Za-z0-9\-]+')
