@@ -47,7 +47,7 @@ class WaLinkController extends Controller
             ->waLinks()
             ->select('id','name','slug','phone','message','clicks','is_active','created_at')
             ->latest()
-            ->paginate(30);
+            ->paginate(15);
 
         return view('wa_links.index', compact('links', 'subscription', 'remainingLinks'));
     }
