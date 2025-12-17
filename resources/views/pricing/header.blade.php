@@ -21,7 +21,23 @@
     <meta property="og:description" content="@yield('og_description', 'Create WhatsApp links with custom messages & QR codes — fast, free, no signup')" />
     <meta property="og:image" content="@yield('og_image', 'https://walive.link/assets/og-image.png')" />
     <meta property="og:url" content="{{ url()->current() }}" />
-
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '833443276229707');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=833443276229707&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@yield('twitter_title', 'Walive – WhatsApp Link Generator & QR Code Maker')" />
