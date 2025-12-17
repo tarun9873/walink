@@ -14,7 +14,7 @@
 
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <link rel="canonical" href="@yield('canonical', url()->current())" />
-
+<meta name="google-site-verification" content="nUEk5nKNRKQ_5AgeX7tsxFdPsnOc6miWZu81C-BXLz4" />
     <!-- OG -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="@yield('og_title', 'Walive – WhatsApp Link Generator & QR Code Maker')" />
@@ -38,6 +38,8 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=1611077743386646&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@yield('twitter_title', 'Walive – WhatsApp Link Generator & QR Code Maker')" />
