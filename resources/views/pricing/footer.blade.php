@@ -4,7 +4,7 @@
             <div class="text-center">
                 <p class="text-gray-600 text-sm">
                     © {{ date('Y') }} Walive. All rights reserved. | 
-                    <a href="/privacy" class="text-green-600 hover:text-green-800">Privacy Policy</a> | 
+                    <a href="{{route('privacy-policy')}}" class="text-green-600 hover:text-green-800">Privacy Policy</a> | 
                     <a href="/terms" class="text-green-600 hover:text-green-800">Terms of Service</a>
                 </p>
                 <p class="text-gray-500 text-xs mt-2">WhatsApp is a trademark of WhatsApp LLC. Walive is not affiliated with WhatsApp.</p>

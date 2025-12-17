@@ -28,6 +28,11 @@ Route::get('/about', function () {
     return view('pricing.about');
 })->name('about');
 
+
+Route::get('/privacy-policy', function () {
+    return view('pricing.privacy');
+})->name('privacy-policy');
+
 Route::get('/link-not-found', [WaLinkController::class, 'notfound'])->name('wa-links.notfound');
 
 // ===================================================
