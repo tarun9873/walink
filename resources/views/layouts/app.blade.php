@@ -353,7 +353,7 @@
         .mobile-menu-btn {
             position: fixed;
             top: 16px;
-            left: 16px;
+            right: 16px;
             z-index: 100;
             background: white;
             border-radius: 10px;
