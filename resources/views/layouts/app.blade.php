@@ -659,25 +659,18 @@
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const mainContent = document.getElementById('main-content');
     
     function openSidebar() {
         if (sidebar) {
             sidebar.classList.add('open');
-            sidebarOverlay.classList.add('active');
-            document.body.classList.add('sidebar-open');
-            // Prevent body scroll when sidebar is open on mobile
-            document.body.style.overflow = 'hidden';
+            if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
         }
     }
     
     function closeSidebar() {
         if (sidebar) {
             sidebar.classList.remove('open');
-            sidebarOverlay.classList.remove('active');
-            document.body.classList.remove('sidebar-open');
-            // Restore body scroll
-            document.body.style.overflow = '';
+            if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
         }
     }
     
@@ -692,38 +685,10 @@
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768) {
-            if (sidebar && sidebar.classList.contains('open') && 
-                !sidebar.contains(e.target) && 
-                mobileMenuBtn && 
-                !mobileMenuBtn.contains(e.target)) {
+            if (sidebar && !sidebar.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
                 closeSidebar();
             }
         }
-    });
-
-    // Close sidebar on escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && window.innerWidth <= 768) {
-            closeSidebar();
-        }
-    });
-
-    // Prevent overscroll bounce on mobile
-    document.addEventListener('touchmove', function(e) {
-        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    // Auto-close sidebar when clicking a link on mobile
-    document.querySelectorAll('.nav-item, .dropdown-item').forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                setTimeout(() => {
-                    closeSidebar();
-                }, 100);
-            }
-        });
     });
 
     // Dropdown functionality for Call Manager
@@ -738,17 +703,6 @@
                 
                 const isOpen = this.classList.contains('open');
                 
-                // Close all other dropdowns
-                document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-                    if (toggle !== this) {
-                        toggle.classList.remove('open');
-                        const menu = toggle.nextElementSibling;
-                        if (menu && menu.classList.contains('dropdown-menu')) {
-                            menu.classList.remove('open');
-                        }
-                    }
-                });
-                
                 // Toggle current dropdown
                 if (isOpen) {
                     this.classList.remove('open');
@@ -759,21 +713,13 @@
                 }
             });
             
-            // Close dropdown when clicking outside (but not on mobile overlay)
+            // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
-                if (!callManagerToggle.contains(e.target) && !callManagerMenu.contains(e.target) && 
-                    !sidebarOverlay.contains(e.target)) {
+                if (!callManagerToggle.contains(e.target) && !callManagerMenu.contains(e.target)) {
                     callManagerToggle.classList.remove('open');
                     callManagerMenu.classList.remove('open');
                 }
             });
-            
-            // Auto-open dropdown if child is active (page reload)
-            const activeDropdownItem = callManagerMenu.querySelector('.dropdown-item.active');
-            if (activeDropdownItem) {
-                callManagerToggle.classList.add('open', 'active-dropdown-parent');
-                callManagerMenu.classList.add('open');
-            }
         }
     });
 </script>
