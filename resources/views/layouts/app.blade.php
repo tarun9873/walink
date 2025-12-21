@@ -1,4 +1,3 @@
-{{-- resources/views/layouts/dashboard.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="overflow-hidden">
 <head>
@@ -105,7 +104,7 @@
 
         /* Prevent overscroll globally */
         html, body {
-            overflow: hidden;
+            overflow-x: hidden;
             width: 100%;
             height: 100%;
             margin: 0;
@@ -126,11 +125,12 @@
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             position: fixed;
             height: 100vh;
-            z-index: 50;
-            transition: all 0.3s ease;
+            z-index: 60;
+            transition: transform 0.3s ease;
             overflow-y: auto;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
         }
 
         /* Hide scrollbar for sidebar but keep functionality */
@@ -157,28 +157,38 @@
             height: 100vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            width: calc(100% - 260px);
         }
 
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
                 width: 280px;
+                z-index: 100;
             }
             .sidebar.open {
                 transform: translateX(0);
-                box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+                box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
             }
             .main-content {
                 margin-left: 0;
                 width: 100%;
+                position: relative;
+                z-index: 10;
+            }
+            /* When sidebar is open, shift main content slightly */
+            .sidebar.open + .main-content {
+                transform: translateX(280px);
             }
         }
 
         /* Prevent overscroll on mobile */
         @media (max-width: 768px) {
-            body {
-                position: fixed;
+            body.sidebar-open {
                 overflow: hidden;
+                position: fixed;
+                width: 100%;
+                height: 100%;
             }
         }
 
@@ -352,13 +362,14 @@
 
         .mobile-menu-btn {
             position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 100;
+            top: 20px;
+            right: 20px;
+            z-index: 110;
             background: white;
             border-radius: 10px;
-            padding: 10px;
+            padding: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
         }
 
         /* Smooth scrolling for main content */
@@ -407,6 +418,31 @@
             backdrop-filter: blur(10px);
             background: rgba(30, 41, 59, 0.95);
         }
+        
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 55;
+            backdrop-filter: blur(2px);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar-overlay.active {
+                display: block;
+                animation: fadeIn 0.3s ease;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 
     <!-- Tere existing assets -->
@@ -423,8 +459,8 @@
         <i class="fas fa-bars text-gray-700"></i>
     </button>
 
-    <!-- Sidebar Overlay -->
-    <div id="sidebar-overlay" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="closeSidebar()"></div>
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="sidebar-overlay lg:hidden" onclick="closeSidebar()"></div>
 
     <!-- Dashboard Layout -->
     <div class="flex h-screen">
@@ -623,11 +659,13 @@
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const mainContent = document.getElementById('main-content');
     
     function openSidebar() {
         if (sidebar) {
             sidebar.classList.add('open');
-            if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
+            sidebarOverlay.classList.add('active');
+            document.body.classList.add('sidebar-open');
             // Prevent body scroll when sidebar is open on mobile
             document.body.style.overflow = 'hidden';
         }
@@ -636,7 +674,8 @@
     function closeSidebar() {
         if (sidebar) {
             sidebar.classList.remove('open');
-            if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+            sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
             // Restore body scroll
             document.body.style.overflow = '';
         }
@@ -653,7 +692,10 @@
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768) {
-            if (sidebar && !sidebar.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
+            if (sidebar && sidebar.classList.contains('open') && 
+                !sidebar.contains(e.target) && 
+                mobileMenuBtn && 
+                !mobileMenuBtn.contains(e.target)) {
                 closeSidebar();
             }
         }
@@ -677,7 +719,9 @@
     document.querySelectorAll('.nav-item, .dropdown-item').forEach(link => {
         link.addEventListener('click', () => {
             if (window.innerWidth <= 768) {
-                closeSidebar();
+                setTimeout(() => {
+                    closeSidebar();
+                }, 100);
             }
         });
     });
@@ -715,9 +759,10 @@
                 }
             });
             
-            // Close dropdown when clicking outside
+            // Close dropdown when clicking outside (but not on mobile overlay)
             document.addEventListener('click', function(e) {
-                if (!callManagerToggle.contains(e.target) && !callManagerMenu.contains(e.target)) {
+                if (!callManagerToggle.contains(e.target) && !callManagerMenu.contains(e.target) && 
+                    !sidebarOverlay.contains(e.target)) {
                     callManagerToggle.classList.remove('open');
                     callManagerMenu.classList.remove('open');
                 }
