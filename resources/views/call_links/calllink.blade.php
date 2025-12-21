@@ -186,29 +186,36 @@
                             </label>
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                                 <!-- Country Code -->
-                                <div class="md:col-span-4">
-                                    <div class="relative group">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                        </div>
-                                        <select name="country_code" 
-                                                id="country_code"
-                                                required
-                                                class="pl-10 w-full rounded-lg border-gray-300 px-4 py-3.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('country_code') border-red-300 @enderror">
-                                            <option value="">Select Country</option>
-                                            <option value="91" {{ old('country_code', $callLink->country_code ?? '') == '91' ? 'selected' : '' }}>India (+91)</option>
-                                            <option value="1" {{ old('country_code', $callLink->country_code ?? '') == '1' ? 'selected' : '' }}>USA (+1)</option>
-                                            <option value="44" {{ old('country_code', $callLink->country_code ?? '') == '44' ? 'selected' : '' }}>UK (+44)</option>
-                                            <option value="61" {{ old('country_code', $callLink->country_code ?? '') == '61' ? 'selected' : '' }}>Australia (+61)</option>
-                                            <option value="971" {{ old('country_code', $callLink->country_code ?? '') == '971' ? 'selected' : '' }}>UAE (+971)</option>
-                                        </select>
-                                    </div>
-                                    @error('country_code')
-                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                                <!-- Country Code -->
+<div class="md:col-span-4">
+    <div class="relative group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <select name="country_code" 
+                id="country_code"
+                required
+                class="pl-10 w-full rounded-lg border-gray-300 px-4 py-3.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('country_code') border-red-300 @enderror">
+            <option value="">Select Country</option>
+            @php
+                // You can fetch the JSON data from the Gist URL or a local file
+                $countriesJson = file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json');
+                $countries = json_decode($countriesJson, true);
+            @endphp
+            @foreach($countries as $country)
+                <option value="{{ substr($country['dial_code'], 1) }}" 
+                    {{ old('country_code', $callLink->country_code ?? '') == substr($country['dial_code'], 1) ? 'selected' : '' }}>
+                    {{ $country['name'] }} ({{ $country['dial_code'] }})
+                </option>
+            @endforeach
+        </select>
+    </div>
+    @error('country_code')
+        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
 
                                 <!-- Phone Number -->
                                 <div class="md:col-span-8">

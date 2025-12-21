@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache; // हे import add करा
 
 class CallLinkController extends Controller
 {
@@ -52,7 +53,13 @@ class CallLinkController extends Controller
             $remainingLinks = max(0, 1 - $activeLinksCount);
         }
         
-        return view('call_links.calllink', compact('remainingLinks'));
+        // Country codes caching - येथे add करा
+        $countries = Cache::remember('country_codes', 86400, function () {
+            $json = file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json');
+            return json_decode($json, true);
+        });
+        
+        return view('call_links.calllink', compact('remainingLinks', 'countries'));
     }
 
     /**
@@ -138,41 +145,41 @@ class CallLinkController extends Controller
      * List all call links
      */
     public function index()
-{
-    $user = auth()->user();
-    
-    $subscription = Subscription::where('user_id', $user->id)
-        ->where('status', 'active')
-        ->where('expires_at', '>', now())
-        ->with('plan')
-        ->first();
+    {
+        $user = auth()->user();
         
-    // Calculate remaining links
-    $remainingLinks = 0;
-    if ($subscription) {
-        $plan = $subscription->plan;
-        $planLimit = $plan ? $plan->links_limit : 1;
-        $extraLinks = $subscription->extra_links ?? 0;
-        $totalAllowed = $planLimit + $extraLinks;
-        
-        $activeLinksCount = CallLink::where('user_id', $user->id)
-            ->where('is_active', 1)
-            ->count();
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->with('plan')
+            ->first();
             
-        $remainingLinks = max(0, $totalAllowed - $activeLinksCount);
-    }
-    
-    // Calculate monthly clicks
-    $monthlyClicks = CallLink::where('user_id', $user->id)
-        ->whereMonth('created_at', now()->month)
-        ->sum('clicks');
-    
-    $links = CallLink::where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
+        // Calculate remaining links
+        $remainingLinks = 0;
+        if ($subscription) {
+            $plan = $subscription->plan;
+            $planLimit = $plan ? $plan->links_limit : 1;
+            $extraLinks = $subscription->extra_links ?? 0;
+            $totalAllowed = $planLimit + $extraLinks;
+            
+            $activeLinksCount = CallLink::where('user_id', $user->id)
+                ->where('is_active', 1)
+                ->count();
+                
+            $remainingLinks = max(0, $totalAllowed - $activeLinksCount);
+        }
+        
+        // Calculate monthly clicks
+        $monthlyClicks = CallLink::where('user_id', $user->id)
+            ->whereMonth('created_at', now()->month)
+            ->sum('clicks');
+        
+        $links = CallLink::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-    return view('call_links.index', compact('links', 'subscription', 'remainingLinks', 'monthlyClicks'));
-}
+        return view('call_links.index', compact('links', 'subscription', 'remainingLinks', 'monthlyClicks'));
+    }
 
     /**
      * Edit call link
@@ -186,8 +193,13 @@ class CallLinkController extends Controller
         
         $remainingLinks = 0; // Not needed for edit
         
-        // FIXED: Changed from 'wa_links.calllink' to 'call_links.calllink'
-        return view('call_links.calllink', compact('callLink', 'remainingLinks'));
+        // Country codes caching - edit method मध्येही add करा
+        $countries = Cache::remember('country_codes', 86400, function () {
+            $json = file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json');
+            return json_decode($json, true);
+        });
+        
+        return view('call_links.calllink', compact('callLink', 'remainingLinks', 'countries'));
     }
 
     /**
@@ -237,7 +249,7 @@ class CallLinkController extends Controller
             'is_active' => $request->has('is_active') ? (bool)$request->is_active : $callLink->is_active,
         ]);
 
-        return redirect()->route('call-links.index')->with('success', 'Call link updated successfully!');
+        return redirect()->route('admin.call-links.index')->with('success', 'Call link updated successfully!');
     }
 
     /**
