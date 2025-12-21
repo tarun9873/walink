@@ -1,6 +1,6 @@
 {{-- resources/views/layouts/dashboard.blade.php --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="overflow-hidden">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -103,10 +103,24 @@
             font-family: 'Inter', sans-serif;
         }
 
-        body {
+        /* Prevent overscroll globally */
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
             background: #f8fafc;
         }
 
+        /* Allow scrolling only in main content */
+        .main-content-wrapper {
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Sidebar specific styles */
         .sidebar {
             width: 260px;
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
@@ -114,22 +128,57 @@
             height: 100vh;
             z-index: 50;
             transition: all 0.3s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Hide scrollbar for sidebar but keep functionality */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .main-content {
             margin-left: 260px;
             transition: all 0.3s ease;
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
+                width: 280px;
             }
             .sidebar.open {
                 transform: translateX(0);
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
             }
             .main-content {
                 margin-left: 0;
+                width: 100%;
+            }
+        }
+
+        /* Prevent overscroll on mobile */
+        @media (max-width: 768px) {
+            body {
+                position: fixed;
+                overflow: hidden;
             }
         }
 
@@ -142,6 +191,7 @@
             color: #94a3b8;
             transition: all 0.3s ease;
             text-decoration: none;
+            white-space: nowrap;
         }
 
         .nav-item:hover {
@@ -152,6 +202,88 @@
 
         .nav-item.active {
             background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Dropdown Styles */
+        .dropdown-container {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin: 4px 12px;
+            border-radius: 10px;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            cursor: pointer;
+            background: #1e2d48;
+            user-select: none;
+        }
+
+        .dropdown-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .dropdown-toggle.active {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+
+        .dropdown-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-toggle.open .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            margin-left: 20px;
+            margin-right: 8px;
+        }
+
+        .dropdown-menu.open {
+            max-height: 200px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            margin: 2px 0;
+            border-radius: 8px;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            padding-left: 20px;
+        }
+
+        .dropdown-item.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: white;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Enhanced active state for dropdown parent */
+        .dropdown-toggle.active-dropdown-parent {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25));
             color: white;
             border-left: 4px solid var(--primary);
         }
@@ -228,6 +360,53 @@
             padding: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
+
+        /* Smooth scrolling for main content */
+        .main-content {
+            scroll-behavior: smooth;
+        }
+
+        /* Fix for iOS bounce effect */
+        @supports (-webkit-touch-callout: none) {
+            .main-content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Custom scrollbar for main content */
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+
+        /* Ensure no horizontal scroll */
+        .main-content > * {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Plan info at bottom of sidebar */
+        .sidebar-bottom {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: inherit;
+            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.95);
+        }
     </style>
 
     <!-- Tere existing assets -->
@@ -238,7 +417,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
-<body>
+<body class="overflow-hidden">
     <!-- Mobile Menu Button -->
     <button id="mobile-menu-btn" class="mobile-menu-btn lg:hidden">
         <i class="fas fa-bars text-gray-700"></i>
@@ -248,7 +427,7 @@
     <div id="sidebar-overlay" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="closeSidebar()"></div>
 
     <!-- Dashboard Layout -->
-    <div class="flex">
+    <div class="flex h-screen">
         @auth
         <!-- Sidebar (Only show when authenticated) -->
         <div id="sidebar" class="sidebar">
@@ -266,25 +445,55 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="py-4">
+            <nav class="py-4 flex-1 overflow-y-auto">
                 <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    
                     <span>Dashboard</span>
                 </a>
+                
                 <a href="{{ route('wa-links.index') }}" class="nav-item {{ request()->routeIs('wa-links.*') ? 'active' : '' }}">
                     <i class="fas fa-link w-5 mr-3"></i>
-                    <span>My Links</span>
+                    <span>WhatsApp Links</span>
                     <span class="ml-auto bg-blue-500 text-xs px-2 py-1 rounded-full">{{ optional(auth()->user())->waLinks()->count() ?? 0 }}</span>
                 </a>
-                <a href="{{ route('wa-links.create') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-edit w-5 mr-3"></i>
-                    <span>Create New Link</span>
+                
+                <a href="{{ route('wa-links.create') }}" class="nav-item {{ request()->routeIs('wa-links.create') ? 'active' : '' }}">
+                    <i class="fas fa-plus-circle w-5 mr-3"></i>
+                    <span>Create WhatsApp Link</span>
                 </a>
-                 <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-edit w-5 mr-3"></i>
+
+                <!-- Call Manager Dropdown -->
+                <div class="dropdown-container">
+                    <div class="dropdown-toggle {{ request()->routeIs(['admin.call-links.*', 'call-links.*']) ? 'active-dropdown-parent open' : '' }}" 
+                         id="callManagerToggle">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-phone w-5 mr-3"></i>
+                            <span>Call Manager</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down dropdown-icon text-xs ml-2"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu {{ request()->routeIs(['admin.call-links.*', 'call-links.*']) ? 'open' : '' }}" 
+                         id="callManagerMenu">
+                        <a href="{{ route('admin.call-links.create') }}" 
+                           class="dropdown-item {{ request()->routeIs('admin.call-links.create') ? 'active' : '' }}">
+                            <i class="fa-solid fa-plus w-4 mr-3"></i>
+                            <span>Create Call Link</span>
+                        </a>
+                        
+                        <a href="{{ route('admin.call-links.index') }}" 
+                           class="dropdown-item {{ request()->routeIs('admin.call-links.index') ? 'active' : '' }}">
+                            <i class="fa-solid fa-list w-4 mr-3"></i>
+                            <span>All Call Links</span>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-address-card w-5 mr-3"></i>
                     <span>Profile</span>
                 </a>
+                
                 <a href="{{ route('pricing') }}" class="nav-item {{ request()->routeIs('pricing') ? 'active' : '' }}">
                     <i class="fas fa-crown w-5 mr-3"></i>
                     <span>Upgrade</span>
@@ -303,7 +512,7 @@
             </nav>
 
             <!-- Plan Info -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+            <div class="sidebar-bottom p-4 border-t border-gray-700">
                 <div class="bg-gray-800 rounded-lg p-4">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm text-gray-300">Plan</span>
@@ -340,20 +549,17 @@
         <div id="main-content" class="main-content flex-1 min-h-screen {{ auth()->check() ? '' : 'ml-0' }}">
             <!-- Top Bar -->
             @auth
-            <header class="bg-white border-b border-gray-200">
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div>
                            <div class="images-logo">
-                        <img src="/images/downloa7_7484d.webp" 
-                             alt="Walive Logo" 
-                             class="block h-6 w-auto" style="height: 59px;width: 114px;"/>
-                    </div>
+                                <img src="/images/downloa7_7484d.webp" 
+                                     alt="Walive Logo" 
+                                     class="block h-6 w-auto" style="height: 59px;width: 114px;"/>
+                            </div>
                         </div>
                         <div class="flex items-center space-x-4">
-                            <!-- Notifications -->
-                            
-                            
                             <!-- Quick Stats -->
                             <div class="hidden md:flex items-center space-x-4">
                                 <div class="text-right">
@@ -370,82 +576,161 @@
             </header>
             @endauth
 
-            <!-- Notifications -->
-            <div class="px-6 pt-6">
-                @if(session('success'))
-                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
-                            <p class="text-green-800">{{ session('success') }}</p>
+            <!-- Main Content Wrapper -->
+            <div class="main-content-wrapper">
+                <!-- Notifications -->
+                <div class="px-6 pt-6">
+                    @if(session('success'))
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                <p class="text-green-800">{{ session('success') }}</p>
+                            </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
 
-                @if(session('error'))
-                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
-                            <p class="text-red-800">{{ session('error') }}</p>
+                    @if(session('error'))
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-6">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                                <p class="text-red-800">{{ session('error') }}</p>
+                            </div>
                         </div>
-                    </div>
-                @endif
-            </div>
-
-            <!-- Main Content -->
-            <main class="p-6">
-                @yield('content')
-            </main>
-
-            <!-- Footer -->
-            <footer class="bg-white border-t border-gray-200 py-4 px-6 mt-12">
-                <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
-                    <p>© {{ date('Y') }} Walive. All rights reserved.</p>
-                    <div class="flex items-center space-x-4 mt-2 md:mt-0">
-                        <a href="#" class="hover:text-blue-600">Privacy</a>
-                        <a href="#" class="hover:text-blue-600">Terms</a>
-                        <a href="#" class="hover:text-blue-600">Help</a>
-                    </div>
+                    @endif
                 </div>
-            </footer>
+
+                <!-- Main Content -->
+                <main class="p-6 pb-20">
+                    @yield('content')
+                </main>
+
+                <!-- Footer -->
+                <footer class="bg-white border-t border-gray-200 py-4 px-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+                        <p>© {{ date('Y') }} Walive. All rights reserved.</p>
+                        <div class="flex items-center space-x-4 mt-2 md:mt-0">
+                            <a href="#" class="hover:text-blue-600">Privacy</a>
+                            <a href="#" class="hover:text-blue-600">Terms</a>
+                            <a href="#" class="hover:text-blue-600">Help</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
         </div>
     </div>
+<script>
+    // Mobile Sidebar Toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    function openSidebar() {
+        if (sidebar) {
+            sidebar.classList.add('open');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
+            // Prevent body scroll when sidebar is open on mobile
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeSidebar() {
+        if (sidebar) {
+            sidebar.classList.remove('open');
+            if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+    }
+    
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', openSidebar);
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+            if (sidebar && !sidebar.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
+                closeSidebar();
+            }
+        }
+    });
 
-    <script>
-        // Mobile Sidebar Toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        
-        function openSidebar() {
-            if (sidebar) {
-                sidebar.classList.add('open');
-                if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
-            }
+    // Close sidebar on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && window.innerWidth <= 768) {
+            closeSidebar();
         }
-        
-        function closeSidebar() {
-            if (sidebar) {
-                sidebar.classList.remove('open');
-                if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
-            }
+    });
+
+    // Prevent overscroll bounce on mobile
+    document.addEventListener('touchmove', function(e) {
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+            e.preventDefault();
         }
-        
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', openSidebar);
-        }
-        
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', closeSidebar);
-        }
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (e) => {
+    }, { passive: false });
+
+    // Auto-close sidebar when clicking a link on mobile
+    document.querySelectorAll('.nav-item, .dropdown-item').forEach(link => {
+        link.addEventListener('click', () => {
             if (window.innerWidth <= 768) {
-                if (sidebar && !sidebar.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
-                    closeSidebar();
-                }
+                closeSidebar();
             }
         });
-    </script>
+    });
+
+    // Dropdown functionality for Call Manager
+    document.addEventListener('DOMContentLoaded', function() {
+        const callManagerToggle = document.getElementById('callManagerToggle');
+        const callManagerMenu = document.getElementById('callManagerMenu');
+        
+        if (callManagerToggle && callManagerMenu) {
+            callManagerToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isOpen = this.classList.contains('open');
+                
+                // Close all other dropdowns
+                document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+                    if (toggle !== this) {
+                        toggle.classList.remove('open');
+                        const menu = toggle.nextElementSibling;
+                        if (menu && menu.classList.contains('dropdown-menu')) {
+                            menu.classList.remove('open');
+                        }
+                    }
+                });
+                
+                // Toggle current dropdown
+                if (isOpen) {
+                    this.classList.remove('open');
+                    callManagerMenu.classList.remove('open');
+                } else {
+                    this.classList.add('open');
+                    callManagerMenu.classList.add('open');
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!callManagerToggle.contains(e.target) && !callManagerMenu.contains(e.target)) {
+                    callManagerToggle.classList.remove('open');
+                    callManagerMenu.classList.remove('open');
+                }
+            });
+            
+            // Auto-open dropdown if child is active (page reload)
+            const activeDropdownItem = callManagerMenu.querySelector('.dropdown-item.active');
+            if (activeDropdownItem) {
+                callManagerToggle.classList.add('open', 'active-dropdown-parent');
+                callManagerMenu.classList.add('open');
+            }
+        }
+    });
+</script>
 </body>
 </html>

@@ -307,7 +307,16 @@ class User extends Authenticatable
         $percentage = ($activeCount / $totalAllowed) * 100;
         return min(100, $percentage);
     }
+// User.php में add करें
+public function callLinks()
+{
+    return $this->hasMany(CallLink::class);
+}
 
+public function active_call_links_count()
+{
+    return $this->callLinks()->where('is_active', true)->count();
+}
     /**
      * Get subscription history
      */

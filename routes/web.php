@@ -1,13 +1,14 @@
 <?php 
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\WaLinkController;
-use App\Http\Controllers\PricingController;
-use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\WaLinkController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PricingController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CallLinkController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,7 +113,31 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Cancel Subscription
     Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
+
+
+
+  
 });
+  // ADD CALL LINKS HERE FOR ADMIN
+ // ADD CALL LINKS HERE FOR ADMIN
+
+
+// Admin Call Links Routes (with admin prefix)
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/call-links', [CallLinkController::class, 'index'])->name('admin.call-links.index');
+    Route::get('/call-links/create', [CallLinkController::class, 'create'])->name('admin.call-links.create');
+    Route::post('/call-links', [CallLinkController::class, 'store'])->name('admin.call-links.store');
+    Route::get('/call-links/{callLink}/edit', [CallLinkController::class, 'edit'])->name('admin.call-links.edit');
+    Route::put('/call-links/{callLink}', [CallLinkController::class, 'update'])->name('admin.call-links.update');
+    Route::delete('/call-links/{callLink}', [CallLinkController::class, 'destroy'])->name('admin.call-links.destroy');
+    Route::get('/call-links/{callLink}/analytics', [CallLinkController::class, 'analytics'])->name('admin.call-links.analytics');
+});
+
+// Public routes (no auth required)
+Route::get('/call/{slug}', [CallLinkController::class, 'redirect'])->name('call.redirect');
+Route::get('/call-links/notfound', [CallLinkController::class, 'notfound'])->name('call-links.notfound');
+
+
 
 // Home route redirect to admin dashboard if admin
 Route::get('/home', function () {
@@ -128,3 +153,5 @@ Route::get('/home', function () {
 Route::get('/{slug}', [WaLinkController::class, 'redirect'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('wa-links.redirect');
+
+   
