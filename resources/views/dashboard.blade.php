@@ -309,7 +309,7 @@
     <script>
     // Auto-hide alerts after 5 seconds
     setTimeout(() => {
-        const alerts = document.querySelectorAll('.bg-green-100, .bg-red-100, .bg-yellow-100');
+        const alerts = document.querySelectorAll('.bg-green-200, .bg-red-100, .bg-yellow-100');
         alerts.forEach(alert => {
             alert.style.display = 'none';
         });
