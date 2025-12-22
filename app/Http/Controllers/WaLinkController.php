@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\WaLink;
 use App\Models\WaLinkClick;
 use App\Models\Subscription;
+use App\Models\CallLink;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,6 +15,14 @@ use Illuminate\Support\Facades\Cache;
 
 class WaLinkController extends Controller
 {
+
+    private function totalUsedLinks($userId)
+{
+    return
+        WaLink::where('user_id', $userId)->where('is_active', 1)->count()
+      + CallLink::where('user_id', $userId)->where('is_active', 1)->count();
+}
+
     public function __construct()
     {
         // Protect everything except the public redirect route
@@ -25,6 +34,8 @@ class WaLinkController extends Controller
         // Apply link limit middleware to create and store
         $this->middleware('link.limit')->only(['create', 'store']);
     }
+
+
 
     /**
      * List links for logged-in user (paginated)
@@ -56,18 +67,40 @@ class WaLinkController extends Controller
      * Show create form
      */
     public function create()
-    {
-        $user = auth()->user();
-        
-        // Check if user can create more links
-        if (!$user->canCreateMoreLinks()) {
-            return redirect()->route('pricing')
-                ->with('error', 'You have reached your link limit. Please upgrade your plan.');
-        }
-        
-        $remainingLinks = $user->remaining_links;
-        return view('wa_links.create', compact('remainingLinks'));
+{
+    $user = auth()->user();
+
+    // 🔹 Get active subscription FIRST
+    $subscription = Subscription::where('user_id', $user->id)
+        ->where('status', 'active')
+        ->where('expires_at', '>', now())
+        ->with('plan')
+        ->first();
+
+    // 🔹 Combined used links (WA + Call)
+    $usedLinks = $this->totalUsedLinks($user->id);
+
+    // 🔹 Total allowed links
+    if ($subscription) {
+        $totalAllowed = $subscription->plan->links_limit
+            + ($subscription->extra_links ?? 0);
+    } else {
+        // Free / expired user
+        $totalAllowed = 1;
     }
+
+    // 🔹 Remaining links
+    $remainingLinks = max(0, $totalAllowed - $usedLinks);
+
+    // 🔹 Final safety check
+    if ($remainingLinks <= 0) {
+        return redirect()->route('pricing')
+            ->with('error', 'You have reached your link limit. Please upgrade your plan.');
+    }
+
+    return view('wa_links.create', compact('remainingLinks'));
+}
+
 
     /**
      * Store new link
@@ -99,9 +132,8 @@ class WaLinkController extends Controller
             ->first();
             
         // Count active links
-        $activeLinksCount = WaLink::where('user_id', $user->id)
-            ->where('is_active', 1)
-            ->count();
+        $activeLinksCount = $this->totalUsedLinks($user->id);
+
             
         // Determine limits
         if (!$subscription) {
