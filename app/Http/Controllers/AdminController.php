@@ -182,10 +182,12 @@ public function transferLinks(Request $request, User $user)
     $toUser   = User::findOrFail($request->to_user_id);
     $count    = $request->links_count;
 
+    // ❌ Same user check
     if ($fromUser->id === $toUser->id) {
         return back()->with('error', 'Same user me transfer allowed nahi.');
     }
 
+    // Active subscriptions
     $fromSub = $fromUser->activeSubscription;
     $toSub   = $toUser->activeSubscription;
 
@@ -193,22 +195,40 @@ public function transferLinks(Request $request, User $user)
         return back()->with('error', 'Dono users ke paas active plan hona chahiye.');
     }
 
-    // 🔴 Effective limit check
+    // =============================
+    // 🔢 CURRENT EFFECTIVE LIMIT
+    // =============================
     $fromEffective = $fromSub->plan->links_limit + ($fromSub->extra_links ?? 0);
 
     if ($fromEffective < $count) {
         return back()->with('error', 'Source user ke paas itni plan limit nahi hai.');
     }
 
+    // =============================
+    // 🛑 SAFETY CHECK (MOST IMPORTANT)
+    // =============================
+    // Transfer ke baad user over-limit to nahi ho jayega?
+    $usedLinks   = $fromUser->waLinks()->count();
+    $futureLimit = $fromEffective - $count;
+
+    if ($usedLinks > $futureLimit) {
+        return back()->with(
+            'error',
+            "Transfer allowed nahi.
+            User already {$usedLinks} links use kar chuka hai,
+            transfer ke baad limit {$futureLimit} ho jayegi."
+        );
+    }
+
     DB::beginTransaction();
     try {
 
-        // 🔻 Source user: limit kam
+        // 🔻 SOURCE USER: plan limit kam (negative extra_links allowed)
         $fromSub->update([
             'extra_links' => ($fromSub->extra_links ?? 0) - $count,
         ]);
 
-        // 🔺 Target user: limit badhao
+        // 🔺 TARGET USER: plan limit badhao
         $toSub->update([
             'extra_links' => ($toSub->extra_links ?? 0) + $count,
         ]);
@@ -217,14 +237,14 @@ public function transferLinks(Request $request, User $user)
 
         return back()->with(
             'success',
-            "Plan limit successfully transferred 🔥
-            {$count} links shifted from {$fromUser->email} to {$toUser->email}
-            (Used links untouched ✔)"
+            "Plan limit successfully transferred ✅
+            {$count} links shifted from {$fromUser->email} to {$toUser->email}.
+            Used links untouched ✔"
         );
 
     } catch (\Exception $e) {
         DB::rollBack();
-        return back()->with('error', $e->getMessage());
+        return back()->with('error', 'Error: ' . $e->getMessage());
     }
 }
 
