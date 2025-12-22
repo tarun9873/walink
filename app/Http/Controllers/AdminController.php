@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Plan;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
+use App\Models\WaLink;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
@@ -166,6 +167,67 @@ class AdminController extends Controller
             return back()->with('error', 'Failed to assign plan: ' . $e->getMessage());
         }
     }
+
+    
+
+
+public function transferLinks(Request $request, User $user)
+{
+    $request->validate([
+        'to_user_id'  => 'required|exists:users,id',
+        'links_count' => 'required|integer|min:1',
+    ]);
+
+    $fromUser = $user;
+    $toUser   = User::findOrFail($request->to_user_id);
+    $count    = $request->links_count;
+
+    if ($fromUser->id === $toUser->id) {
+        return back()->with('error', 'Same user me transfer allowed nahi.');
+    }
+
+    $fromSub = $fromUser->activeSubscription;
+    $toSub   = $toUser->activeSubscription;
+
+    if (!$fromSub || !$toSub) {
+        return back()->with('error', 'Dono users ke paas active plan hona chahiye.');
+    }
+
+    // 🔴 Effective limit check
+    $fromEffective = $fromSub->plan->links_limit + ($fromSub->extra_links ?? 0);
+
+    if ($fromEffective < $count) {
+        return back()->with('error', 'Source user ke paas itni plan limit nahi hai.');
+    }
+
+    DB::beginTransaction();
+    try {
+
+        // 🔻 Source user: limit kam
+        $fromSub->update([
+            'extra_links' => ($fromSub->extra_links ?? 0) - $count,
+        ]);
+
+        // 🔺 Target user: limit badhao
+        $toSub->update([
+            'extra_links' => ($toSub->extra_links ?? 0) + $count,
+        ]);
+
+        DB::commit();
+
+        return back()->with(
+            'success',
+            "Plan limit successfully transferred 🔥
+            {$count} links shifted from {$fromUser->email} to {$toUser->email}
+            (Used links untouched ✔)"
+        );
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
+    }
+}
+
 
     // Extend User Plan
     public function extendPlan(Request $request, $userId)

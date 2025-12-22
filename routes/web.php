@@ -83,40 +83,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // ===================================================
 // 7️⃣ ADMIN ROUTES
-// ===================================================
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
+
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+    // ================= Dashboard =================
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    
-    // Users Management
+
+    // ================= Users =================
     Route::get('/users', [AdminController::class, 'users'])->name('users');
-    
-    // Plans Management
-    Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
-    Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');
-    Route::post('/toggle-plan/{plan}', [AdminController::class, 'togglePlanStatus'])->name('toggle-plan');
-    Route::delete('/plans/{plan}/delete', [AdminController::class, 'deletePlan'])->name('delete-plan');
-    
-    // Subscriptions Management
-    Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
-    // View User Details
     Route::get('/users/{id}', [AdminController::class, 'viewUser'])->name('view-user');
-    
+
+    // 🔥 TRANSFER LINKS (FIXED & WORKING)
+    Route::post(
+        '/users/{user}/transfer-links',
+        [AdminController::class, 'transferLinks']
+    )->name('users.transfer-links');
+
     // User Subscription Actions
     Route::post('/users/{user}/add-links', [AdminController::class, 'addLinks'])->name('add-links');
     Route::post('/users/{user}/extend-plan', [AdminController::class, 'extendUserPlan'])->name('extend-plan');
     Route::post('/users/{user}/upgrade-plan', [AdminController::class, 'upgradePlan'])->name('upgrade-plan');
-    
-    // Assign Plan Routes
-    Route::get('/assign-plan/{userId?}', [AdminController::class, 'assignPlanForm'])->name('assign-plan.form');
-    Route::post('/assign-plan', [AdminController::class, 'assignPlan'])->name('assign-plan');
-    
-    // Cancel Subscription
     Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
 
+    // ================= Plans =================
+    Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
+    Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');
+    Route::post('/toggle-plan/{plan}', [AdminController::class, 'togglePlanStatus'])->name('toggle-plan');
+    Route::delete('/plans/{plan}/delete', [AdminController::class, 'deletePlan'])->name('delete-plan');
 
+    // ================= Assign Plan =================
+    Route::get('/assign-plan/{userId?}', [AdminController::class, 'assignPlanForm'])->name('assign-plan.form');
+    Route::post('/assign-plan', [AdminController::class, 'assignPlan'])->name('assign-plan');
 
-  
+    // ================= Subscriptions =================
+    Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
+
+    // ================= Debug / Utility =================
+    Route::get('/debug/database', [AdminController::class, 'checkDatabase'])->name('debug.database');
+    Route::get('/debug/fix-extra-links', [AdminController::class, 'fixExtraLinksColumn'])->name('debug.fix-extra-links');
+    Route::get('/test/add-links/{userId}/{links}', [AdminController::class, 'testAddLinks'])->name('test.add-links');
+
+    // ================= Revenue (AJAX) =================
+    Route::get('/revenue-data', [AdminController::class, 'getRevenueData'])->name('revenue-data');
+
 });
   // ADD CALL LINKS HERE FOR ADMIN
  // ADD CALL LINKS HERE FOR ADMIN

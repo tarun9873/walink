@@ -85,6 +85,7 @@
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
                         Assign Plan
                     </button>
+
                 </div>
             </form>
         </div>
@@ -165,7 +166,11 @@
                                                     class="links-btn text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded text-xs">
                                                 <i class="fas fa-link mr-1"></i>Manage Links
                                             </button>
-                                            
+                                               <button
+  onclick="openTransferModal({{ $user->id }}, '{{ $user->email }}')"
+  class="text-orange-600 bg-orange-50 px-3 py-1 rounded text-xs">
+  Transfer Links
+</button>
                                             <!-- Upgrade Plan -->
                                             <button type="button" 
                                                     data-user-id="{{ $user->id }}" 
@@ -181,6 +186,7 @@
                                                     class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded text-xs">
                                                 <i class="fas fa-gift mr-1"></i>Assign Plan
                                             </button>
+                                            
                                         @endif
                                     </div>
                                 </td>
@@ -217,10 +223,52 @@
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                         Extend Plan
                     </button>
+
+                 
+
                 </div>
             </form>
         </div>
     </div>
+</div>
+
+
+<div id="transferModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+  <div class="bg-white w-96 mx-auto mt-32 p-6 rounded">
+    <h3 class="font-bold mb-4">Transfer Links</h3>
+
+    <form id="transferForm" method="POST">
+      @csrf
+
+      <p class="text-sm mb-2">
+        From: <span id="fromUserEmail" class="font-semibold"></span>
+      </p>
+
+      <div class="mb-3">
+        <label class="text-sm">Transfer To (Free Trial User)</label>
+        <select name="to_user_id" class="w-full border rounded" required>
+          @foreach($users as $u)
+            <option value="{{ $u->id }}">{{ $u->email }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="text-sm">Number of Links</label>
+        <input type="number" name="links_count" min="1" required
+               class="w-full border rounded">
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeTransferModal()"
+                class="px-3 py-1 bg-gray-300 rounded">Cancel</button>
+
+        <button class="px-3 py-1 bg-orange-600 text-white rounded">
+          Transfer
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Manage Links Modal -->
@@ -410,5 +458,17 @@ document.getElementById('extendForm')?.addEventListener('submit', function(e) {
 document.getElementById('upgradeForm')?.addEventListener('submit', function(e) {
     console.log('Upgrade form submitted');
 });
+
+function openTransferModal(userId, email) {
+    document.getElementById('fromUserEmail').innerText = email;
+    document.getElementById('transferForm').action =
+        `/admin/users/${userId}/transfer-links`;
+    document.getElementById('transferModal').classList.remove('hidden');
+}
+
+function closeTransferModal() {
+    document.getElementById('transferModal').classList.add('hidden');
+}
 </script>
+
 @endsection

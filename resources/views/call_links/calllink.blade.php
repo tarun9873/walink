@@ -5,6 +5,42 @@
 @section('page-title', isset($callLink) ? 'Edit Call Link' : 'Create Call Link')
 @section('page-subtitle', isset($callLink) ? 'Edit your phone call link' : 'Create a new phone call link')
 
+@push('styles')
+<!-- Mobiscroll CSS -->
+<link href="https://cdn.mobiscroll.com/5.21.0/css/mobiscroll.min.css" rel="stylesheet" />
+<style>
+.md-country-picker-item {
+    position: relative;
+    line-height: 20px;
+    padding: 10px 0 10px 40px;
+}
+
+.md-country-picker-flag {
+    position: absolute;
+    left: 0;
+    height: 20px;
+}
+
+.mbsc-scroller-wheel-item-2d .md-country-picker-item {
+    transform: scale(1.1);
+}
+
+/* Custom styling to match your theme */
+.mbsc-ios.mbsc-textfield-box {
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+}
+
+.mbsc-ios.mbsc-textfield-box.mbsc-textfield-has-value {
+    border-color: #3b82f6;
+}
+
+.mbsc-ios .mbsc-textfield-input {
+    padding: 14px 12px;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -185,40 +221,27 @@
                                 Phone Number <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                <!-- Country Code -->
-                                <!-- Country Code -->
-<div class="md:col-span-4">
-    <div class="relative group">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <select name="country_code" 
-                id="country_code"
-                required
-                class="pl-10 w-full rounded-lg border-gray-300 px-4 py-3.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('country_code') border-red-300 @enderror">
-            <option value="">Select Country</option>
-            @php
-                // You can fetch the JSON data from the Gist URL or a local file
-                $countriesJson = file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json');
-                $countries = json_decode($countriesJson, true);
-            @endphp
-            @foreach($countries as $country)
-                <option value="{{ substr($country['dial_code'], 1) }}" 
-                    {{ old('country_code', $callLink->country_code ?? '') == substr($country['dial_code'], 1) ? 'selected' : '' }}>
-                    {{ $country['name'] }} ({{ $country['dial_code'] }})
-                </option>
-            @endforeach
-        </select>
-    </div>
-    @error('country_code')
-        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-    @enderror
-</div>
+                                <!-- Country Code with Mobiscroll -->
+                                <div class="md:col-span-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Country Code <span class="text-red-500">*</span>
+                                    </label>
+                                    
+                                    <label>
+    Countries
+    <input mbsc-input id="demo-country-picker" data-dropdown="true" data-input-style="box" data-label-style="stacked" placeholder="Please select..." />
+</label>
+  
+                                    @error('country_code')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
                                 <!-- Phone Number -->
                                 <div class="md:col-span-8">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Phone Number <span class="text-red-500">*</span>
+                                    </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,7 +289,14 @@
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             
-                
+                            <!-- Preview -->
+                            <div class="mt-3 flex items-center text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-lg">
+                                <span class="font-medium">Your link:</span>
+                                <span class="mx-2">https://walive.link/call/</span>
+                                <span id="slugPreview" class="text-blue-700 font-semibold">
+                                    {{ old('slug', $callLink->slug ?? 'your-slug') }}
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Active Status (Edit only) -->
@@ -368,8 +398,6 @@
                                 </div>
                             </div>
                         </div>
-
-                      
                     </div>
                 </div>
 
@@ -413,74 +441,72 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.mobiscroll.com/5.21.0/js/mobiscroll.min.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // SLUG PREVIEW - Real-time updates
-    const slugInput = document.getElementById('slug');
-    const slugPreview = document.getElementById('slugPreview');
-    
-    if (slugInput && slugPreview) {
-        // Function to update preview
-        function updateSlugPreview() {
-            let slug = slugInput.value.toLowerCase()
-                .replace(/[^a-z0-9-]/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '');
-            
-            slugPreview.textContent = slug || 'your-slug';
-            slugPreview.classList.add('text-blue-700', 'font-semibold');
-        }
-        
-        // Event listener for input
-        slugInput.addEventListener('input', updateSlugPreview);
-        
-        // Also listen for paste events
-        slugInput.addEventListener('paste', function(e) {
-            setTimeout(updateSlugPreview, 10);
-        });
-        
-        // Trigger on page load
-        updateSlugPreview();
-    }
-    
-    // PHONE NUMBER FORMATTING
-    const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-    }
-    
-    // AUTO-GENERATE SLUG FROM NAME
-    const nameInput = document.getElementById('name');
-    if (nameInput && slugInput) {
-        nameInput.addEventListener('blur', function() {
-            if (!slugInput.value.trim()) {
-                let slug = this.value.toLowerCase()
-                    .replace(/[^a-z0-9\s]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
-                
-                if (slug) {
-                    slugInput.value = slug;
-                    updateSlugPreview();
-                }
-            }
-        });
-    }
-    
-    // ADD FOCUS EFFECTS TO FORM ELEMENTS
-    const formElements = document.querySelectorAll('input, select, textarea');
-    formElements.forEach(element => {
-        element.addEventListener('focus', function() {
-            this.parentElement.classList.add('ring-2', 'ring-blue-100');
-        });
-        
-        element.addEventListener('blur', function() {
-            this.parentElement.classList.remove('ring-2', 'ring-blue-100');
-        });
+document.addEventListener('DOMContentLoaded', function () {
+
+    mobiscroll.setOptions({
+        theme: 'ios',
+        themeVariant: 'light'
     });
+
+    const dialCodeMap = {
+        in: '91',
+        us: '1',
+        gb: '44',
+        ae: '971',
+        au: '61'
+    };
+
+    const picker = mobiscroll.select('#demo-country-picker', {
+        display: 'anchored',
+        filter: true,
+        itemHeight: 40,
+
+        renderItem: function (item) {
+            return `
+                <div class="md-country-picker-item">
+                    <img class="md-country-picker-flag"
+                         src="https://img.mobiscroll.com/demos/flags/${item.value}.png">
+                    ${item.text}
+                </div>
+            `;
+        },
+
+        onSet: function (ev) {
+            document.getElementById('country_code_hidden').value =
+                dialCodeMap[ev.value] || '';
+        }
+    });
+
+    // Load country list
+    mobiscroll.getJson(
+        'https://trial.mobiscroll.com/content/countries.json',
+        function (resp) {
+            const countries = resp.map(c => ({
+                text: c.text,
+                value: c.value
+            }));
+
+            picker.setOptions({ data: countries });
+
+            // EDIT MODE support
+            @if(isset($callLink) && $callLink->country_code)
+                const reverseMap = {
+                    '91': 'in',
+                    '1': 'us',
+                    '44': 'gb',
+                    '971': 'ae',
+                    '61': 'au'
+                };
+
+                const val = reverseMap['{{ $callLink->country_code }}'];
+                if (val) picker.setVal(val);
+            @endif
+        }
+    );
+
 });
 </script>
 @endpush

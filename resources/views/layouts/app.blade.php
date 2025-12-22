@@ -57,6 +57,9 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
 
+<!-- Add these in your app.blade.php <head> section -->
+<link href="https://cdn.mobiscroll.com/5.21.0/css/mobiscroll.min.css" rel="stylesheet" />
+<script src="https://cdn.mobiscroll.com/5.21.0/js/mobiscroll.min.js"></script>
 <!-- Manifest (PWA support) -->
 <link rel="manifest" href="/site.webmanifest">
 
