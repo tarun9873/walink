@@ -5,42 +5,6 @@
 @section('page-title', isset($callLink) ? 'Edit Call Link' : 'Create Call Link')
 @section('page-subtitle', isset($callLink) ? 'Edit your phone call link' : 'Create a new phone call link')
 
-@push('styles')
-<!-- Mobiscroll CSS -->
-<link href="https://cdn.mobiscroll.com/5.21.0/css/mobiscroll.min.css" rel="stylesheet" />
-<style>
-.md-country-picker-item {
-    position: relative;
-    line-height: 20px;
-    padding: 10px 0 10px 40px;
-}
-
-.md-country-picker-flag {
-    position: absolute;
-    left: 0;
-    height: 20px;
-}
-
-.mbsc-scroller-wheel-item-2d .md-country-picker-item {
-    transform: scale(1.1);
-}
-
-/* Custom styling to match your theme */
-.mbsc-ios.mbsc-textfield-box {
-    border-radius: 0.5rem;
-    border: 1px solid #d1d5db;
-}
-
-.mbsc-ios.mbsc-textfield-box.mbsc-textfield-has-value {
-    border-color: #3b82f6;
-}
-
-.mbsc-ios .mbsc-textfield-input {
-    padding: 14px 12px;
-}
-</style>
-@endpush
-
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -221,17 +185,26 @@
                                 Phone Number <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                <!-- Country Code with Mobiscroll -->
+                                <!-- Country Code -->
                                 <div class="md:col-span-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Country Code <span class="text-red-500">*</span>
-                                    </label>
-                                    
-                                    <label>
-    Countries
-    <input mbsc-input id="demo-country-picker" data-dropdown="true" data-input-style="box" data-label-style="stacked" placeholder="Please select..." />
-</label>
-  
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <select name="country_code" 
+                                                id="country_code"
+                                                required
+                                                class="pl-10 w-full rounded-lg border-gray-300 px-4 py-3.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('country_code') border-red-300 @enderror">
+                                            <option value="">Select Country</option>
+                                            <option value="91" {{ old('country_code', $callLink->country_code ?? '') == '91' ? 'selected' : '' }}>India (+91)</option>
+                                            <option value="1" {{ old('country_code', $callLink->country_code ?? '') == '1' ? 'selected' : '' }}>USA (+1)</option>
+                                            <option value="44" {{ old('country_code', $callLink->country_code ?? '') == '44' ? 'selected' : '' }}>UK (+44)</option>
+                                            <option value="61" {{ old('country_code', $callLink->country_code ?? '') == '61' ? 'selected' : '' }}>Australia (+61)</option>
+                                            <option value="971" {{ old('country_code', $callLink->country_code ?? '') == '971' ? 'selected' : '' }}>UAE (+971)</option>
+                                        </select>
+                                    </div>
                                     @error('country_code')
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -239,9 +212,6 @@
 
                                 <!-- Phone Number -->
                                 <div class="md:col-span-8">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone Number <span class="text-red-500">*</span>
-                                    </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,36 +236,102 @@
                             </p>
                         </div>
 
-                        <!-- Custom URL Slug - WhatsApp Style -->
+                        <!-- Custom URL Slug -->
                         <div class="mb-6">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 Custom URL Slug <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                    </svg>
+                            <div class="relative group">
+                                <div class="flex rounded-lg shadow-sm">
+                                    <span class="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm font-medium">
+                                        {{ url('/') }}/call/
+                                    </span>
+                                    <div class="relative flex-1">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                            </svg>
+                                        </div>
+                                        <input type="text" 
+                                               name="slug" 
+                                               id="slug"
+                                               value="{{ old('slug', $callLink->slug ?? '') }}" 
+                                               required
+                                               placeholder="support, sales, contact"
+                                               class="pl-10 w-full rounded-r-lg border-gray-300 px-4 py-3.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('slug') border-red-300 @enderror" />
+                                    </div>
                                 </div>
-                                <input type="text" 
-                                       name="slug" 
-                                       id="slug"
-                                       value="{{ old('slug', $callLink->slug ?? '') }}" 
-                                       required
-                                       placeholder="support, sales, contact"
-                                       class="pl-10 w-full rounded-lg border-gray-300 px-4 py-3.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('slug') border-red-300 @enderror" />
                             </div>
                             @error('slug')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             
-                            <!-- Preview -->
-                            <div class="mt-3 flex items-center text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-lg">
-                                <span class="font-medium">Your link:</span>
-                                <span class="mx-2">https://walive.link/call/</span>
-                                <span id="slugPreview" class="text-blue-700 font-semibold">
-                                    {{ old('slug', $callLink->slug ?? 'your-slug') }}
-                                </span>
+                            <!-- URL Preview Section - FIXED -->
+                            <div class="mt-6">
+                                <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                                <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-semibold text-gray-900">Your Call Link</h4>
+                                                <p class="text-xs text-gray-500">Copy and share this link anywhere</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Copy Button - NO onclick attribute -->
+                                        <button type="button" 
+                                                id="copyButton"
+                                                class="inline-flex items-center px-3.5 py-1.5 text-xs font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
+                                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                                            </svg>
+                                            Copy
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- URL Preview Box with Click-to-Copy - NO onclick attribute -->
+                                    <div class="relative group">
+                                        <div id="linkPreview" 
+                                             class="flex items-center justify-between bg-white rounded-lg border border-gray-300 p-3 hover:bg-gray-50 hover:border-gray-400 cursor-pointer transition">
+                                            <div class="flex items-center overflow-hidden">
+                                                <svg class="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                                </svg>
+                                                <code class="text-sm font-mono text-gray-800 truncate">
+                                                    {{ url('/') }}/call/<span id="slugPreview" class="font-semibold text-blue-600">{{ old('slug', $callLink->slug ?? 'your-slug') }}</span>
+                                                </code>
+                                            </div>
+                                            <div class="flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Copy Success Tooltip -->
+                                        <div id="copySuccess" 
+                                             class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none">
+                                            <div class="flex items-center">
+                                                <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                Copied to clipboard!
+                                            </div>
+                                            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-green-600"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs text-gray-500 mt-3 flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Click anywhere on the link above to copy, or use the copy button
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -398,6 +434,37 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Quick Stats -->
+                        <div class="mt-6 pt-6 border-t border-gray-100">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center text-sm">
+                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">No app download required</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Works on all devices</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Track call analytics</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Increase customer reach</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -441,72 +508,164 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.mobiscroll.com/5.21.0/js/mobiscroll.min.js"></script>
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    mobiscroll.setOptions({
-        theme: 'ios',
-        themeVariant: 'light'
-    });
-
-    const dialCodeMap = {
-        in: '91',
-        us: '1',
-        gb: '44',
-        ae: '971',
-        au: '61'
-    };
-
-    const picker = mobiscroll.select('#demo-country-picker', {
-        display: 'anchored',
-        filter: true,
-        itemHeight: 40,
-
-        renderItem: function (item) {
-            return `
-                <div class="md-country-picker-item">
-                    <img class="md-country-picker-flag"
-                         src="https://img.mobiscroll.com/demos/flags/${item.value}.png">
-                    ${item.text}
-                </div>
+// COPY FUNCTIONALITY - Global function
+window.copyCallLink = function() {
+    const baseUrl = "{{ url('/') }}/call/";
+    const slugElement = document.getElementById('slugPreview');
+    
+    if (!slugElement) {
+        alert('Cannot copy: Link preview not available');
+        return;
+    }
+    
+    const slug = slugElement.textContent;
+    const fullLink = baseUrl + slug;
+    
+    // Create temporary input element
+    const tempInput = document.createElement('input');
+    tempInput.value = fullLink;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    tempInput.setSelectionRange(0, 99999);
+    
+    // Copy the text
+    navigator.clipboard.writeText(fullLink).then(() => {
+        // Show success message
+        const successElement = document.getElementById('copySuccess');
+        const copyButton = document.getElementById('copyButton');
+        
+        // Show tooltip
+        if(successElement) {
+            successElement.classList.remove('opacity-0');
+            successElement.classList.add('opacity-100');
+        }
+        
+        // Update button text
+        if(copyButton) {
+            copyButton.innerHTML = `
+                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Copied!
             `;
-        },
-
-        onSet: function (ev) {
-            document.getElementById('country_code_hidden').value =
-                dialCodeMap[ev.value] || '';
+            copyButton.classList.remove('border-gray-300', 'text-gray-700', 'hover:bg-gray-50', 'hover:border-gray-400');
+            copyButton.classList.add('border-green-500', 'text-green-600', 'bg-green-50', 'hover:bg-green-100');
         }
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            if(successElement) {
+                successElement.classList.remove('opacity-100');
+                successElement.classList.add('opacity-0');
+            }
+            
+            if(copyButton) {
+                copyButton.innerHTML = `
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                    </svg>
+                    Copy
+                `;
+                copyButton.classList.remove('border-green-500', 'text-green-600', 'bg-green-50', 'hover:bg-green-100');
+                copyButton.classList.add('border-gray-300', 'text-gray-700', 'bg-white', 'hover:bg-gray-50', 'hover:border-gray-400');
+            }
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy link. Please try again.');
     });
+    
+    // Clean up
+    document.body.removeChild(tempInput);
+};
 
-    // Load country list
-    mobiscroll.getJson(
-        'https://trial.mobiscroll.com/content/countries.json',
-        function (resp) {
-            const countries = resp.map(c => ({
-                text: c.text,
-                value: c.value
-            }));
-
-            picker.setOptions({ data: countries });
-
-            // EDIT MODE support
-            @if(isset($callLink) && $callLink->country_code)
-                const reverseMap = {
-                    '91': 'in',
-                    '1': 'us',
-                    '44': 'gb',
-                    '971': 'ae',
-                    '61': 'au'
-                };
-
-                const val = reverseMap['{{ $callLink->country_code }}'];
-                if (val) picker.setVal(val);
-            @endif
+// DOM CONTENT LOADED
+document.addEventListener('DOMContentLoaded', function() {
+    // SETUP EVENT LISTENERS FOR COPY
+    const copyButton = document.getElementById('copyButton');
+    const linkPreview = document.getElementById('linkPreview');
+    
+    if(copyButton) {
+        copyButton.addEventListener('click', window.copyCallLink);
+    }
+    
+    if(linkPreview) {
+        linkPreview.addEventListener('click', window.copyCallLink);
+    }
+    
+    // SLUG PREVIEW - Real-time updates
+    const slugInput = document.getElementById('slug');
+    const slugPreview = document.getElementById('slugPreview');
+    
+    if (slugInput && slugPreview) {
+        // Function to update preview
+        function updateSlugPreview() {
+            let slug = slugInput.value.toLowerCase()
+                .replace(/[^a-z0-9-]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            
+            slugPreview.textContent = slug || 'your-slug';
+            slugPreview.classList.add('text-blue-700', 'font-bold');
+            
+            // Animation
+            slugPreview.classList.add('animate-pulse');
+            setTimeout(() => {
+                slugPreview.classList.remove('animate-pulse');
+            }, 300);
         }
-    );
-
+        
+        // Event listener for input
+        slugInput.addEventListener('input', updateSlugPreview);
+        
+        // Also listen for paste events
+        slugInput.addEventListener('paste', function(e) {
+            setTimeout(updateSlugPreview, 10);
+        });
+        
+        // Trigger on page load
+        updateSlugPreview();
+    }
+    
+    // PHONE NUMBER FORMATTING
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
+    
+    // AUTO-GENERATE SLUG FROM NAME
+    const nameInput = document.getElementById('name');
+    if (nameInput && slugInput) {
+        nameInput.addEventListener('blur', function() {
+            if (!slugInput.value.trim()) {
+                let slug = this.value.toLowerCase()
+                    .replace(/[^a-z0-9\s]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+                
+                if (slug) {
+                    slugInput.value = slug;
+                    slugInput.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+    }
+    
+    // ADD FOCUS EFFECTS TO FORM ELEMENTS
+    const formElements = document.querySelectorAll('input, select, textarea');
+    formElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.parentElement.classList.add('ring-2', 'ring-blue-100');
+        });
+        
+        element.addEventListener('blur', function() {
+            this.parentElement.classList.remove('ring-2', 'ring-blue-100');
+        });
+    });
 });
 </script>
 @endpush
