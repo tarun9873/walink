@@ -116,7 +116,7 @@
 <script>
 // Auto-hide notifications after 5 seconds
 setTimeout(() => {
-    const notifications = document.querySelectorAll('.bg-green-100, .bg-red-100');
+    const notifications = document.querySelectorAll('.bg-green-200, .bg-red-200');
     notifications.forEach(notification => {
         if (notification.closest('.relative') || notification.closest('.bg-green-100, .bg-red-100')) {
             notification.style.display = 'none';
