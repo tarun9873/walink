@@ -1,4 +1,7 @@
 @extends('layouts.admin')
+@php
+    use App\Models\CallLink;
+@endphp
 
 @section('content')
 <div class="px-4 py-6">
@@ -109,15 +112,28 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($users as $user)
-                            @php
-                                $subscription = $user->activeSubscription;
-                                $linksUsed = $user->waLinks()->count();
-                                $planLimit = $subscription ? $subscription->plan->links_limit : 0;
-                                $extraLinks = $subscription ? ($subscription->extra_links ?? 0) : 0;
-                                $totalLimit = $planLimit + $extraLinks;
-                                $expiryDate = $subscription && $subscription->ends_at ? $subscription->ends_at->format('d M Y') : 'No plan';
-                                $isActive = $subscription && $subscription->ends_at ? $subscription->ends_at->isFuture() : false;
-                            @endphp
+                           @php
+    $subscription = $user->activeSubscription;
+
+    // 🔢 COMBINED USED LINKS (WA + CALL)
+    $linksUsed =
+        $user->waLinks()->where('is_active', 1)->count()
+      + \App\Models\CallLink::where('user_id', $user->id)->where('is_active', 1)->count();
+
+    $planLimit  = $subscription ? $subscription->plan->links_limit : 0;
+    $extraLinks = $subscription ? ($subscription->extra_links ?? 0) : 0;
+    $totalLimit = $planLimit + $extraLinks;
+
+    // ⏳ EXPIRY (FIXED COLUMN)
+    if ($subscription && $subscription->expires_at) {
+        $expiryDate = \Carbon\Carbon::parse($subscription->expires_at)->format('d M Y');
+        $isActive   = \Carbon\Carbon::parse($subscription->expires_at)->isFuture();
+    } else {
+        $expiryDate = 'No plan';
+        $isActive   = false;
+    }
+@endphp
+
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
