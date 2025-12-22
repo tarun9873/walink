@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\CallLink;
+use App\Models\WaLink;
 use App\Models\Subscription;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache; // हे import add करा
+use Illuminate\Support\Facades\Cache;
 
 class CallLinkController extends Controller
 {
@@ -19,86 +20,87 @@ class CallLinkController extends Controller
     }
 
     /**
-     * Show create form for call link
+     * 🔢 TOTAL USED LINKS (WA + CALL)
+     */
+    private function totalUsedLinks($userId)
+    {
+        return
+            WaLink::where('user_id', $userId)->where('is_active', 1)->count()
+          + CallLink::where('user_id', $userId)->where('is_active', 1)->count();
+    }
+
+    /**
+     * Show create form
      */
     public function create()
     {
         $user = auth()->user();
-        
-        // Check subscription
+
         $subscription = Subscription::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
+            ->with('plan')
             ->first();
-            
-        // Calculate remaining links
+
         $remainingLinks = 0;
+
         if ($subscription) {
-            $plan = Plan::find($subscription->plan_id);
-            $planLimit = $plan ? $plan->links_limit : 1;
+            $planLimit  = $subscription->plan->links_limit;
             $extraLinks = $subscription->extra_links ?? 0;
             $totalAllowed = $planLimit + $extraLinks;
-            
-            $activeLinksCount = CallLink::where('user_id', $user->id)
-                ->where('is_active', 1)
-                ->count();
-                
-            $remainingLinks = max(0, $totalAllowed - $activeLinksCount);
+
+            $usedLinks = $this->totalUsedLinks($user->id);
+            $remainingLinks = max(0, $totalAllowed - $usedLinks);
         } else {
-            // Free user - max 1 link
-            $activeLinksCount = CallLink::where('user_id', $user->id)
-                ->where('is_active', 1)
-                ->count();
-                
-            $remainingLinks = max(0, 1 - $activeLinksCount);
+            // Free user
+            $usedLinks = $this->totalUsedLinks($user->id);
+            $remainingLinks = max(0, 1 - $usedLinks);
         }
-        
-        // Country codes caching - येथे add करा
+
         $countries = Cache::remember('country_codes', 86400, function () {
-            $json = file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json');
+            $json = file_get_contents(
+                'https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json'
+            );
             return json_decode($json, true);
         });
-        
+
         return view('call_links.calllink', compact('remainingLinks', 'countries'));
     }
 
     /**
-     * Store new call link
+     * Store call link
      */
     public function store(Request $request)
     {
         $user = auth()->user();
-        
-        // Check subscription
+
         $subscription = Subscription::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
+            ->with('plan')
             ->first();
-            
-        // Check link limit
-        $activeLinksCount = CallLink::where('user_id', $user->id)
-            ->where('is_active', 1)
-            ->count();
-            
+
+        $usedLinks = $this->totalUsedLinks($user->id);
+
         if ($subscription) {
-            $plan = Plan::find($subscription->plan_id);
-            $planLimit = $plan ? $plan->links_limit : 1;
-            $extraLinks = $subscription->extra_links ?? 0;
-            $totalAllowed = $planLimit + $extraLinks;
-            
-            if ($activeLinksCount >= $totalAllowed) {
-                return back()->with('error', 'You have reached your link limit. Please upgrade your plan.')
-                             ->withInput();
+            $totalAllowed = $subscription->plan->links_limit + ($subscription->extra_links ?? 0);
+
+            if ($usedLinks >= $totalAllowed) {
+                return back()->with(
+                    'error',
+                    'You have reached your link limit.'
+                )->withInput();
             }
         } else {
-            // Free user - max 1 link
-            if ($activeLinksCount >= 1) {
-                return back()->with('error', 'Free users can create only 1 link. Please subscribe to create more links.')
-                             ->withInput();
+            if ($usedLinks >= 1) {
+                return back()->with(
+                    'error',
+                    'Free users can create only 1 link.'
+                )->withInput();
             }
         }
 
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:call_links,slug',
             'phone' => 'required|string|max:20',
@@ -107,25 +109,15 @@ class CallLinkController extends Controller
 
         $slug = Str::slug($request->slug);
 
-        // Reserved slugs
         $reserved = ['login','register','admin','api','home','dashboard','pricing','subscribe','subscription','wa','call'];
         if (in_array(strtolower($slug), $reserved)) {
             return back()->withErrors(['slug' => 'This slug is reserved'])->withInput();
         }
 
-        // Check if slug already exists
-        if (CallLink::where('slug', $slug)->exists()) {
-            return back()->withErrors(['slug' => 'This slug is already taken'])->withInput();
-        }
-
-        // Normalize phone
         $phone = preg_replace('/\D+/', '', $request->phone);
         if (!$phone) {
             return back()->withErrors(['phone' => 'Invalid phone number'])->withInput();
         }
-
-        // Create tel: link
-        $full_url = "tel:+" . $request->country_code . $phone;
 
         CallLink::create([
             'user_id' => $user->id,
@@ -133,83 +125,81 @@ class CallLinkController extends Controller
             'slug' => $slug,
             'phone' => $phone,
             'country_code' => $request->country_code,
-            'full_url' => $full_url,
+            'full_url' => "tel:+" . $request->country_code . $phone,
             'is_active' => true,
             'clicks' => 0,
         ]);
 
-        return redirect()->route('admin.call-links.index')->with('success', 'Call link created successfully!');
+        return redirect()
+            ->route('admin.call-links.index')
+            ->with('success', 'Call link created successfully!');
     }
 
     /**
-     * List all call links
+     * List links
      */
     public function index()
     {
         $user = auth()->user();
-        
+
         $subscription = Subscription::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->with('plan')
             ->first();
-            
-        // Calculate remaining links
+
         $remainingLinks = 0;
+
         if ($subscription) {
-            $plan = $subscription->plan;
-            $planLimit = $plan ? $plan->links_limit : 1;
-            $extraLinks = $subscription->extra_links ?? 0;
-            $totalAllowed = $planLimit + $extraLinks;
-            
-            $activeLinksCount = CallLink::where('user_id', $user->id)
-                ->where('is_active', 1)
-                ->count();
-                
-            $remainingLinks = max(0, $totalAllowed - $activeLinksCount);
+            $totalAllowed = $subscription->plan->links_limit + ($subscription->extra_links ?? 0);
+            $usedLinks = $this->totalUsedLinks($user->id);
+            $remainingLinks = max(0, $totalAllowed - $usedLinks);
         }
-        
-        // Calculate monthly clicks
+
         $monthlyClicks = CallLink::where('user_id', $user->id)
             ->whereMonth('created_at', now()->month)
             ->sum('clicks');
-        
+
         $links = CallLink::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->paginate(10);
 
-        return view('call_links.index', compact('links', 'subscription', 'remainingLinks', 'monthlyClicks'));
+        return view('call_links.index', compact(
+            'links',
+            'subscription',
+            'remainingLinks',
+            'monthlyClicks'
+        ));
     }
 
     /**
-     * Edit call link
+     * Edit
      */
     public function edit(CallLink $callLink)
     {
-        // Authorization check
         if ($callLink->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
+            abort(403);
         }
-        
-        $remainingLinks = 0; // Not needed for edit
-        
-        // Country codes caching - edit method मध्येही add करा
+
         $countries = Cache::remember('country_codes', 86400, function () {
-            $json = file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json');
+            $json = file_get_contents(
+                'https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json'
+            );
             return json_decode($json, true);
         });
-        
+
+        $remainingLinks = 0;
+
         return view('call_links.calllink', compact('callLink', 'remainingLinks', 'countries'));
     }
 
     /**
-     * Update call link
+     * Update
      */
     public function update(Request $request, CallLink $callLink)
     {
-        // Authorization check
         if ($callLink->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
+            abort(403);
         }
 
         $request->validate([
@@ -217,90 +207,55 @@ class CallLinkController extends Controller
             'slug' => 'required|string|max:255|unique:call_links,slug,' . $callLink->id,
             'phone' => 'required|string|max:20',
             'country_code' => 'required|string|max:5',
-            'is_active' => 'nullable|boolean',
         ]);
 
         $slug = Str::slug($request->slug);
 
-        // Reserved slugs
-        $reserved = ['login','register','admin','api','home','dashboard','pricing','subscribe','subscription','wa','call'];
-        if (in_array(strtolower($slug), $reserved)) {
-            return back()->withErrors(['slug' => 'This slug is reserved'])->withInput();
-        }
-
-        // Check if slug already exists (excluding current)
-        if (CallLink::where('slug', $slug)->where('id', '!=', $callLink->id)->exists()) {
-            return back()->withErrors(['slug' => 'This slug is already taken'])->withInput();
-        }
-
-        // Normalize phone
         $phone = preg_replace('/\D+/', '', $request->phone);
-        if (!$phone) {
-            return back()->withErrors(['phone' => 'Invalid phone number'])->withInput();
-        }
 
-        // Update call link
         $callLink->update([
             'name' => $request->name,
             'slug' => $slug,
             'phone' => $phone,
             'country_code' => $request->country_code,
             'full_url' => "tel:+" . $request->country_code . $phone,
-            'is_active' => $request->has('is_active') ? (bool)$request->is_active : $callLink->is_active,
         ]);
 
-        return redirect()->route('admin.call-links.index')->with('success', 'Call link updated successfully!');
+        return redirect()
+            ->route('admin.call-links.index')
+            ->with('success', 'Call link updated successfully!');
     }
 
     /**
-     * Delete call link
+     * Delete
      */
     public function destroy(CallLink $callLink)
     {
-        // Authorization check
         if ($callLink->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
+            abort(403);
         }
 
         $callLink->delete();
 
-        return redirect()->route('admin.call-links.index')->with('success', 'Call link deleted successfully!');
+        return back()->with('success', 'Call link deleted successfully!');
     }
 
     /**
-     * Redirect to call link
+     * Redirect
      */
     public function redirect($slug)
     {
-        $link = CallLink::where('slug', $slug)->first();
+        $link = CallLink::where('slug', $slug)->where('is_active', 1)->first();
 
-        if (!$link || !$link->is_active) {
-            Log::info("Missing or inactive call link: {$slug}");
+        if (!$link) {
             return redirect()->route('call-links.notfound');
         }
 
-        // Increment clicks
         $link->increment('clicks');
 
         return redirect()->away($link->full_url);
     }
 
-    /**
-     * Show analytics
-     */
-    public function analytics(CallLink $callLink)
-    {
-        // Authorization check
-        if ($callLink->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        return view('call_links.analytics', compact('callLink'));
-    }
-
-    /**
-     * Not found page
-     */
     public function notfound()
     {
         return view('call_links.notfound');
