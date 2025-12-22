@@ -269,13 +269,13 @@
     </div>
 </div>
 
-{{-- <script>
+<script>
 // Auto-hide notifications after 5 seconds
 setTimeout(() => {
-    const notifications = document.querySelectorAll('.bg-green-100, .bg-red-100');
+    const notifications = document.querySelectorAll('.bg-green-200, .bg-red-200');
     notifications.forEach(notification => {
         notification.style.display = 'none';
     });
 }, 5000);
-</script> --}}
+</script>
 @endsection
