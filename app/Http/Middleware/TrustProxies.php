@@ -8,16 +8,12 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * The trusted proxies for this application.
-     *
-     * @var array<int, string>|string|null
+     * Trust all proxies (Cloudflare, Load Balancer, Hosting)
      */
-    protected $proxies;
+    protected $proxies = '*';
 
     /**
-     * The headers that should be used to detect proxies.
-     *
-     * @var int
+     * Headers used to detect real client IP
      */
     protected $headers =
         Request::HEADER_X_FORWARDED_FOR |

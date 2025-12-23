@@ -273,6 +273,7 @@ class WaLinkController extends Controller
      */
     public function redirect($slug)
     {
+            dd(request()->ip()); // 👈 YAHAN DAALO (temporary)
         try {
             $link = WaLink::where('slug', $slug)->first();
 
@@ -358,17 +359,23 @@ class WaLinkController extends Controller
 private function trackClick(WaLink $waLink)
 {
     try {
-        // Safety: model exists?
         if (!class_exists(WaLinkClick::class)) {
             return;
         }
 
-        $ip = request()->ip();
+        // ✅ REAL CLIENT IP
+        $ip = request()->header('CF-Connecting-IP')
+            ?? request()->header('X-Forwarded-For')
+            ?? request()->ip();
 
-        // 🔹 GEO LOCATION FROM IP
+        if (strpos($ip, ',') !== false) {
+            $ip = explode(',', $ip)[0];
+        }
+
+        // 🌍 GEO LOOKUP
         $location = GeoIP::getLocation($ip);
 
-        // 🔹 USER AGENT DETAILS
+        // 📱 USER AGENT
         $agent = $this->getUserAgent();
 
         WaLinkClick::create([
@@ -376,23 +383,23 @@ private function trackClick(WaLink $waLink)
             'ip_address'  => $ip,
             'user_agent'  => request()->userAgent(),
 
-            // 🌍 GEO DATA (FIXED)
             'country'     => $location->country ?? 'Unknown',
             'city'        => $location->city ?? 'Unknown',
 
-            // 🔗 REFERRER
             'referrer'    => request()->headers->get('referer'),
 
-            // 📱 DEVICE INFO
             'device_type' => $agent['device_type'] ?? 'Unknown',
             'browser'     => $agent['browser'] ?? 'Unknown',
             'platform'    => $agent['platform'] ?? 'Unknown',
         ]);
 
-    } catch (\Exception $e) {
-        Log::error('Error tracking click: ' . $e->getMessage());
+    } catch (\Throwable $e) {
+        Log::error('Error tracking click: '.$e->getMessage(), [
+            'ip' => request()->ip()
+        ]);
     }
 }
+
 
     /**
      * Get user agent details
