@@ -24,6 +24,13 @@ require __DIR__.'/auth.php';
 // ===================================================
 // 2️⃣ PUBLIC ROUTES
 // ===================================================
+
+use Torann\GeoIP\Facades\GeoIP;
+
+Route::get('/_geo_test', function () {
+    return GeoIP::getLocation(request()->ip());
+});
+
 Route::get('/', [PricingController::class, 'index'])->name('pricing');
 Route::get('/about', function () {
     return view('pricing.about');
