@@ -12,6 +12,9 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Torann\GeoIP\Facades\GeoIP;
+
+
 
 class WaLinkController extends Controller
 {
@@ -350,33 +353,46 @@ class WaLinkController extends Controller
     }
 
     /**
-     * Track individual click with details
-     */
-    private function trackClick(WaLink $waLink)
-    {
-        try {
-            // Check if WaLinkClick model exists
-            if (!class_exists(WaLinkClick::class)) {
-                return;
-            }
-
-            $agent = $this->getUserAgent();
-            
-            WaLinkClick::create([
-                'wa_link_id' => $waLink->id,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'country' => $this->getCountryFromIP(request()->ip()),
-                'city' => $this->getCityFromIP(request()->ip()),
-                'referrer' => request()->header('referer'),
-                'device_type' => $agent['device_type'],
-                'browser' => $agent['browser'],
-                'platform' => $agent['platform'],
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error tracking click: ' . $e->getMessage());
+ * Track individual click with details
+ */
+private function trackClick(WaLink $waLink)
+{
+    try {
+        // Safety: model exists?
+        if (!class_exists(WaLinkClick::class)) {
+            return;
         }
+
+        $ip = request()->ip();
+
+        // 🔹 GEO LOCATION FROM IP
+        $location = GeoIP::getLocation($ip);
+
+        // 🔹 USER AGENT DETAILS
+        $agent = $this->getUserAgent();
+
+        WaLinkClick::create([
+            'wa_link_id'  => $waLink->id,
+            'ip_address'  => $ip,
+            'user_agent'  => request()->userAgent(),
+
+            // 🌍 GEO DATA (FIXED)
+            'country'     => $location->country ?? 'Unknown',
+            'city'        => $location->city ?? 'Unknown',
+
+            // 🔗 REFERRER
+            'referrer'    => request()->headers->get('referer'),
+
+            // 📱 DEVICE INFO
+            'device_type' => $agent['device_type'] ?? 'Unknown',
+            'browser'     => $agent['browser'] ?? 'Unknown',
+            'platform'    => $agent['platform'] ?? 'Unknown',
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error tracking click: ' . $e->getMessage());
     }
+}
 
     /**
      * Get user agent details
