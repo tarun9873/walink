@@ -77,13 +77,12 @@
                                 </a>
 
                                   <!-- 🔥 LOGIN AS USER -->
-    <form action="{{ route('admin.impersonate.leave') }}" method="POST">
-    @csrf
-    <button class="ml-3 text-blue-600 font-semibold">
-        Return to Admin
-    </button>
-</form>
-
+    <form action="{{ route('admin.impersonate', $user->id) }}" method="POST">
+        @csrf
+        <button class="text-purple-600">
+            <i class="fas fa-user-secret"></i>
+        </button>
+    </form>
                                 
                                 @if($user->hasActiveSubscription())
                                 <form action="{{ route('admin.extend-plan', $user->id) }}" method="POST" class="inline">
