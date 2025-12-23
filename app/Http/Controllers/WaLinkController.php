@@ -21,20 +21,20 @@ class WaLinkController extends Controller
 {
 
     private function totalUsedLinks($userId)
-{
-    return
-        WaLink::where('user_id', $userId)->where('is_active', 1)->count()
-      + CallLink::where('user_id', $userId)->where('is_active', 1)->count();
-}
+    {
+        return
+            WaLink::where('user_id', $userId)->where('is_active', 1)->count()
+            + CallLink::where('user_id', $userId)->where('is_active', 1)->count();
+    }
 
     public function __construct()
     {
         // Protect everything except the public redirect route
         $this->middleware('auth')->except('redirect', 'notfound');
-        
+
         // Apply subscription middleware to store method
         $this->middleware('subscription')->only('store');
-        
+
         // Apply link limit middleware to create and store
         $this->middleware('link.limit')->only(['create', 'store']);
     }
@@ -47,20 +47,20 @@ class WaLinkController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         // Get subscription and remaining links
         $subscription = Subscription::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->with('plan')
             ->first();
-            
+
         // Calculate remaining links
         $remainingLinks = $user->remaining_links ?? 0;
-        
+
         $links = $user
             ->waLinks()
-            ->select('id','name','slug','phone','message','clicks','is_active','created_at')
+            ->select('id', 'name', 'slug', 'phone', 'message', 'clicks', 'is_active', 'created_at')
             ->latest()
             ->paginate(15);
 
@@ -71,39 +71,39 @@ class WaLinkController extends Controller
      * Show create form
      */
     public function create()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    // 🔹 Get active subscription FIRST
-    $subscription = Subscription::where('user_id', $user->id)
-        ->where('status', 'active')
-        ->where('expires_at', '>', now())
-        ->with('plan')
-        ->first();
+        // 🔹 Get active subscription FIRST
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->with('plan')
+            ->first();
 
-    // 🔹 Combined used links (WA + Call)
-    $usedLinks = $this->totalUsedLinks($user->id);
+        // 🔹 Combined used links (WA + Call)
+        $usedLinks = $this->totalUsedLinks($user->id);
 
-    // 🔹 Total allowed links
-    if ($subscription) {
-        $totalAllowed = $subscription->plan->links_limit
-            + ($subscription->extra_links ?? 0);
-    } else {
-        // Free / expired user
-        $totalAllowed = 1;
+        // 🔹 Total allowed links
+        if ($subscription) {
+            $totalAllowed = $subscription->plan->links_limit
+                + ($subscription->extra_links ?? 0);
+        } else {
+            // Free / expired user
+            $totalAllowed = 1;
+        }
+
+        // 🔹 Remaining links
+        $remainingLinks = max(0, $totalAllowed - $usedLinks);
+
+        // 🔹 Final safety check
+        if ($remainingLinks <= 0) {
+            return redirect()->route('pricing')
+                ->with('error', 'You have reached your link limit. Please upgrade your plan.');
+        }
+
+        return view('wa_links.create', compact('remainingLinks'));
     }
-
-    // 🔹 Remaining links
-    $remainingLinks = max(0, $totalAllowed - $usedLinks);
-
-    // 🔹 Final safety check
-    if ($remainingLinks <= 0) {
-        return redirect()->route('pricing')
-            ->with('error', 'You have reached your link limit. Please upgrade your plan.');
-    }
-
-    return view('wa_links.create', compact('remainingLinks'));
-}
 
 
     /**
@@ -112,18 +112,18 @@ class WaLinkController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        
+
         // TRIPLE CHECK: Verify user can create more links
         if (!$user->canCreateMoreLinks()) {
             $activeCount = $user->active_links_count;
             $totalAllowed = $user->total_allowed_links;
-            
+
             if ($user->hasActiveSubscription()) {
                 $message = "⚠️ आपकी लिंक सीमा पूरी हो गई है! ({$activeCount}/{$totalAllowed})";
             } else {
                 $message = "❌ आपकी सब्सक्रिप्शन समाप्त हो गई है! आप केवल 1 लिंक बना सकते हैं।";
             }
-            
+
             return redirect()->route('dashboard')
                 ->with('error', $message)
                 ->with('limit_reached', true);
@@ -134,16 +134,16 @@ class WaLinkController extends Controller
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->first();
-            
+
         // Count active links
         $activeLinksCount = $this->totalUsedLinks($user->id);
 
-            
+
         // Determine limits
         if (!$subscription) {
             // Free plan - expired subscription
             $maxAllowed = 1;
-            
+
             if ($activeLinksCount >= $maxAllowed) {
                 return redirect()->route('dashboard')
                     ->with('error', '❌ आपकी सब्सक्रिप्शन समाप्त हो गई है! आप केवल 1 लिंक बना सकते हैं।')
@@ -155,7 +155,7 @@ class WaLinkController extends Controller
             $planLimit = $plan ? $plan->links_limit : 1;
             $extraLinks = $subscription->extra_links ?? 0;
             $totalLimit = $planLimit + $extraLinks;
-            
+
             if ($activeLinksCount >= $totalLimit) {
                 return redirect()->route('dashboard')
                     ->with('error', '⚠️ आपकी लिंक सीमा पूरी हो गई है! अधिक लिंक के लिए अपग्रेड करें।')
@@ -175,7 +175,7 @@ class WaLinkController extends Controller
         $slug = Str::slug($request->slug);
 
         // reserved slugs and uniqueness
-        $reserved = ['login','register','admin','api','home','dashboard', 'pricing', 'subscribe', 'subscription'];
+        $reserved = ['login', 'register', 'admin', 'api', 'home', 'dashboard', 'pricing', 'subscribe', 'subscription'];
         if (in_array(strtolower($slug), $reserved) || WaLink::where('slug', $slug)->exists()) {
             return back()->withErrors(['slug' => 'This slug is reserved or already taken'])->withInput();
         }
@@ -196,10 +196,10 @@ class WaLinkController extends Controller
             'message'  => $request->message,
             'slug'     => $slug,
             'full_url' => $full_url,
-            'is_active'=> true,
+            'is_active' => true,
         ]);
 
-        return redirect()->route('wa-links.index')->with('success','WhatsApp link created successfully!');
+        return redirect()->route('wa-links.index')->with('success', 'WhatsApp link created successfully!');
     }
 
     /**
@@ -220,11 +220,11 @@ class WaLinkController extends Controller
         $this->authorize('update', $waLink);
 
         $request->validate([
-            'name'    => ['required','string','max:100'],
-            'phone'   => ['required','string','max:32'],
-            'message' => ['nullable','string','max:1000'],
-            'slug'    => ['required','string','max:100','regex:/^[A-Za-z0-9\-]+$/'],
-            'is_active'=> ['nullable','boolean'],
+            'name'    => ['required', 'string', 'max:100'],
+            'phone'   => ['required', 'string', 'max:32'],
+            'message' => ['nullable', 'string', 'max:1000'],
+            'slug'    => ['required', 'string', 'max:100', 'regex:/^[A-Za-z0-9\-]+$/'],
+            'is_active' => ['nullable', 'boolean'],
         ], [
             'slug.regex' => 'Slug may contain only letters, numbers and hyphens.'
         ]);
@@ -232,8 +232,8 @@ class WaLinkController extends Controller
         $slug = Str::slug($request->slug);
 
         // reserved slugs & uniqueness excluding current record
-        $reserved = ['login','register','admin','api','home','dashboard', 'pricing', 'subscribe', 'subscription'];
-        if (in_array(strtolower($slug), $reserved) || WaLink::where('slug', $slug)->where('id','!=',$waLink->id)->exists()) {
+        $reserved = ['login', 'register', 'admin', 'api', 'home', 'dashboard', 'pricing', 'subscribe', 'subscription'];
+        if (in_array(strtolower($slug), $reserved) || WaLink::where('slug', $slug)->where('id', '!=', $waLink->id)->exists()) {
             return back()->withErrors(['slug' => 'This slug is reserved or already taken'])->withInput();
         }
 
@@ -256,7 +256,7 @@ class WaLinkController extends Controller
 
         $waLink->save();
 
-        return redirect()->route('wa-links.index')->with('success','Link updated successfully!');
+        return redirect()->route('wa-links.index')->with('success', 'Link updated successfully!');
     }
 
     /**
@@ -266,7 +266,7 @@ class WaLinkController extends Controller
     {
         $this->authorize('delete', $waLink);
         $waLink->delete();
-        return redirect()->route('wa-links.index')->with('success','Link deleted successfully!');
+        return redirect()->route('wa-links.index')->with('success', 'Link deleted successfully!');
     }
 
     /**
@@ -274,7 +274,7 @@ class WaLinkController extends Controller
      */
     public function redirect($slug)
     {
-        
+
         try {
             $link = WaLink::where('slug', $slug)->first();
 
@@ -291,7 +291,7 @@ class WaLinkController extends Controller
 
             return redirect()->away($link->full_url);
         } catch (\Throwable $e) {
-            Log::error("Error redirecting slug {$slug}: ".$e->getMessage(), ['slug'=>$slug,'ip'=>request()->ip()]);
+            Log::error("Error redirecting slug {$slug}: " . $e->getMessage(), ['slug' => $slug, 'ip' => request()->ip()]);
             return redirect()->route('wa-links.notfound');
         }
     }
@@ -302,12 +302,12 @@ class WaLinkController extends Controller
     public function analytics($id)
     {
         $waLink = WaLink::findOrFail($id);
-        
+
         // Check if user owns this link
         if (auth()->id() !== $waLink->user_id) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         // Check if clicks relationship exists
         if (!method_exists($waLink, 'clicks')) {
             // Return empty data if relationship doesn't exist
@@ -333,12 +333,12 @@ class WaLinkController extends Controller
                 ->get();
 
             $cityClicks = WaLinkClick::where('wa_link_id', $waLink->id)
-    ->whereNotNull('city')
-    ->where('city', '!=', '')
-    ->select('city', DB::raw('COUNT(*) as count'))
-    ->groupBy('city')
-    ->orderByDesc('count')
-    ->get();
+                ->whereNotNull('city')
+                ->where('city', '!=', '')
+                ->select('city', DB::raw('COUNT(*) as count'))
+                ->groupBy('city')
+                ->orderByDesc('count')
+                ->get();
 
 
             // Get clicks by device
@@ -354,9 +354,9 @@ class WaLinkController extends Controller
         }
 
         return view('wa_links.analytics', compact(
-            'waLink', 
-            'dailyClicks', 
-            'countryClicks', 
+            'waLink',
+            'dailyClicks',
+            'countryClicks',
             'cityClicks', // 👈 ADD THIS
             'deviceClicks',
             'totalClicks',
@@ -365,54 +365,55 @@ class WaLinkController extends Controller
     }
 
     /**
- * Track individual click with details
- */
-private function trackClick(WaLink $waLink)
-{
-    try {
-        if (!class_exists(WaLinkClick::class)) {
-            return;
+     * Track individual click with details
+     */
+    private function trackClick(WaLink $waLink)
+    {
+        try {
+            if (!class_exists(WaLinkClick::class)) {
+                return;
+            }
+
+            // ✅ REAL IP
+            $ip = request()->header('CF-Connecting-IP')
+                ?? request()->header('X-Forwarded-For')
+                ?? request()->ip();
+
+            if (strpos($ip, ',') !== false) {
+                $ip = explode(',', $ip)[0];
+            }
+
+            // 🌍 GEO DATA
+            $location = GeoIP::getLocation($ip)->toArray();
+
+            // 📱 USER AGENT
+            $agent = $this->getUserAgent();
+
+            WaLinkClick::create([
+                'wa_link_id'  => $waLink->id,
+                'ip_address'  => $ip,
+
+                // 🔥 GEO (FIXED)
+                'country'     => $location['country_name'] ?? 'Unknown',
+
+
+                // 👇 YAHI CHANGE HAI
+                'city' => $location['city']
+                    ?? $location['district']
+                    ?? $location['state_prov']
+                    ?? 'Unknown',
+                    
+                'user_agent'  => request()->userAgent(),
+                'referrer'    => request()->headers->get('referer'),
+
+                'device_type' => $agent['device_type'] ?? 'Unknown',
+                'browser'     => $agent['browser'] ?? 'Unknown',
+                'platform'    => $agent['platform'] ?? 'Unknown',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Click tracking error: ' . $e->getMessage());
         }
-
-        // ✅ REAL IP
-        $ip = request()->header('CF-Connecting-IP')
-            ?? request()->header('X-Forwarded-For')
-            ?? request()->ip();
-
-        if (strpos($ip, ',') !== false) {
-            $ip = explode(',', $ip)[0];
-        }
-
-        // 🌍 GEO DATA
-        $location = GeoIP::getLocation($ip)->toArray();
-
-        // 📱 USER AGENT
-        $agent = $this->getUserAgent();
-
-        WaLinkClick::create([
-            'wa_link_id'  => $waLink->id,
-            'ip_address'  => $ip,
-
-            // 🔥 GEO (FIXED)
-            'country'     => $location['country_name'] ?? 'Unknown',
-            'city' => $location['city']
-    ?? $location['district']
-    ?? $location['state_prov']
-    ?? 'Unknown',
-
-
-            'user_agent'  => request()->userAgent(),
-            'referrer'    => request()->headers->get('referer'),
-
-            'device_type' => $agent['device_type'] ?? 'Unknown',
-            'browser'     => $agent['browser'] ?? 'Unknown',
-            'platform'    => $agent['platform'] ?? 'Unknown',
-        ]);
-
-    } catch (\Throwable $e) {
-        \Log::error('Click tracking error: '.$e->getMessage());
     }
-}
 
 
     /**
@@ -421,7 +422,7 @@ private function trackClick(WaLink $waLink)
     private function getUserAgent()
     {
         $userAgent = request()->userAgent();
-        
+
         // Basic device detection
         $deviceType = 'Desktop';
         if (preg_match('/(android|webos|iphone|ipad|ipod|blackberry|windows phone)/i', $userAgent)) {
