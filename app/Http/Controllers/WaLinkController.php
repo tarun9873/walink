@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\WaLink;
-use App\Models\WaLinkClick;
-use App\Models\Subscription;
-use App\Models\CallLink;
 use App\Models\Plan;
-use Illuminate\Http\Request;
+use App\Models\WaLink;
+use App\Models\CallLink;
+use App\Models\WaLinkClick;
 use Illuminate\Support\Str;
+use App\Models\Subscription;
+use Illuminate\Http\Request;
+use Torann\GeoIP\Facades\GeoIP;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Torann\GeoIP\Facades\GeoIP;
 
 
 
