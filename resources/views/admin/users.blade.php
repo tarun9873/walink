@@ -20,6 +20,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires At</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Login</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -76,13 +77,7 @@
                                     <i class="fas fa-gift"></i>
                                 </a>
 
-                                  <!-- 🔥 LOGIN AS USER -->
-    <form action="{{ route('admin.impersonate', $user->id) }}" method="POST">
-        @csrf
-        <button class="text-purple-600">
-            <i class="fas fa-user-secret"></i>
-        </button>
-    </form>
+                
                                 
                                 @if($user->hasActiveSubscription())
                                 <form action="{{ route('admin.extend-plan', $user->id) }}" method="POST" class="inline">
@@ -108,6 +103,15 @@
                                 </form>
                                 @endif
                             </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                              <!-- 🔥 LOGIN AS USER -->
+    <form action="{{ route('admin.impersonate', $user->id) }}" method="POST">
+        @csrf
+        <button class="text-purple-600">
+            <i class="fas fa-user-secret"></i>
+        </button>
+    </form>
                         </td>
                     </tr>
                     @endforeach
