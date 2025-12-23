@@ -28,7 +28,8 @@ require __DIR__.'/auth.php';
 use Torann\GeoIP\Facades\GeoIP;
 
 Route::get('/_geo_test', function () {
-    return GeoIP::getLocation(request()->ip());
+    $location = GeoIP::getLocation(request()->ip());
+    return response()->json($location);
 });
 
 Route::get('/', [PricingController::class, 'index'])->name('pricing');
