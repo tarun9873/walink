@@ -331,6 +331,15 @@ class WaLinkController extends Controller
                 ->orderBy('count', 'DESC')
                 ->get();
 
+            $cityClicks = WaLinkClick::where('wa_link_id', $waLink->id)
+    ->whereNotNull('city')
+    ->where('city', '!=', '')
+    ->select('city', DB::raw('COUNT(*) as count'))
+    ->groupBy('city')
+    ->orderByDesc('count')
+    ->get();
+
+
             // Get clicks by device
             $deviceClicks = $waLink->clicks()
                 ->selectRaw('device_type, COUNT(*) as count')
@@ -347,6 +356,7 @@ class WaLinkController extends Controller
             'waLink', 
             'dailyClicks', 
             'countryClicks', 
+            'cityClicks', // 👈 ADD THIS
             'deviceClicks',
             'totalClicks',
             'uniqueVisitors'

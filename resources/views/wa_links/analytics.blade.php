@@ -109,30 +109,34 @@
         <!-- Country & Device Stats -->
         <div class="space-y-8">
             <!-- Country Distribution -->
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-green-900 to-green-700 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-white">Clicks by Country</h3>
+          <!-- City Distribution -->
+<div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mt-8">
+    <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 px-6 py-4">
+        <h3 class="text-lg font-semibold text-white">Clicks by City</h3>
+    </div>
+    <div class="p-6">
+        @if($cityClicks->count() > 0)
+            <div class="space-y-3">
+                @foreach($cityClicks as $city)
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-city text-gray-400"></i>
+                        <span class="font-medium text-gray-700">
+                            {{ $city->city }}
+                        </span>
+                    </div>
+                    <span class="font-bold text-indigo-600">
+                        {{ $city->count }}
+                    </span>
                 </div>
-                <div class="p-6">
-                    @if($countryClicks->count() > 0)
-                        <div class="space-y-3">
-                            @foreach($countryClicks as $country)
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-globe text-gray-400"></i>
-                                    <span class="font-medium text-gray-700">{{ $country->country ?: 'Unknown' }}</span>
-                                </div>
-                                <span class="font-bold text-green-600">{{ $country->count }}</span>
-                            </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-4">
-                            <p class="text-gray-500">No country data available</p>
-                        </div>
-                    @endif
-                </div>
+                @endforeach
             </div>
+        @else
+            <p class="text-gray-500 text-center">No city data available</p>
+        @endif
+    </div>
+</div>
+
 
             <!-- Device Distribution -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
