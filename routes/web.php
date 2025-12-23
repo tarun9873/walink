@@ -29,7 +29,7 @@ use Torann\GeoIP\Facades\GeoIP;
 
 Route::get('/_geo_test', function () {
     $location = GeoIP::getLocation(request()->ip());
-    return response()->json($location);
+    return response()->json($location->toArray());
 });
 
 Route::get('/', [PricingController::class, 'index'])->name('pricing');
