@@ -273,7 +273,7 @@ class WaLinkController extends Controller
      */
     public function redirect($slug)
     {
-            dd(request()->ip()); // 👈 YAHAN DAALO (temporary)
+        
         try {
             $link = WaLink::where('slug', $slug)->first();
 
