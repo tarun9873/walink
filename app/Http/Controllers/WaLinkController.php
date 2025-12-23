@@ -363,7 +363,7 @@ private function trackClick(WaLink $waLink)
             return;
         }
 
-        // ✅ REAL CLIENT IP
+        // ✅ REAL IP
         $ip = request()->header('CF-Connecting-IP')
             ?? request()->header('X-Forwarded-For')
             ?? request()->ip();
@@ -372,8 +372,8 @@ private function trackClick(WaLink $waLink)
             $ip = explode(',', $ip)[0];
         }
 
-        // 🌍 GEO LOOKUP
-        $location = GeoIP::getLocation($ip);
+        // 🌍 GEO DATA
+        $location = GeoIP::getLocation($ip)->toArray();
 
         // 📱 USER AGENT
         $agent = $this->getUserAgent();
@@ -381,11 +381,12 @@ private function trackClick(WaLink $waLink)
         WaLinkClick::create([
             'wa_link_id'  => $waLink->id,
             'ip_address'  => $ip,
+
+            // 🔥 GEO (FIXED)
+            'country'     => $location['country_name'] ?? 'Unknown',
+            'city'        => $location['city'] ?? 'Unknown',
+
             'user_agent'  => request()->userAgent(),
-
-            'country'     => $location->country ?? 'Unknown',
-            'city'        => $location->city ?? 'Unknown',
-
             'referrer'    => request()->headers->get('referer'),
 
             'device_type' => $agent['device_type'] ?? 'Unknown',
@@ -394,9 +395,7 @@ private function trackClick(WaLink $waLink)
         ]);
 
     } catch (\Throwable $e) {
-        Log::error('Error tracking click: '.$e->getMessage(), [
-            'ip' => request()->ip()
-        ]);
+        \Log::error('Click tracking error: '.$e->getMessage());
     }
 }
 
