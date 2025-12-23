@@ -109,8 +109,7 @@
         <!-- Country & Device Stats -->
         <div class="space-y-8">
             <!-- Country Distribution -->
-         
-           <!-- City Distribution -->
+          <!-- City Distribution -->
 <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mt-8">
     <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 px-6 py-4">
         <h3 class="text-lg font-semibold text-white">Clicks by City</h3>
@@ -139,6 +138,32 @@
     </div>
 </div>
 
+
+            <!-- Device Distribution -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-900 to-purple-700 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-white">Clicks by Device</h3>
+                </div>
+                <div class="p-6">
+                    @if($deviceClicks->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($deviceClicks as $device)
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-mobile-alt text-gray-400"></i>
+                                    <span class="font-medium text-gray-700">{{ $device->device_type ?: 'Unknown' }}</span>
+                                </div>
+                                <span class="font-bold text-purple-600">{{ $device->count }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <p class="text-gray-500">No device data available</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 
