@@ -390,25 +390,25 @@ class WaLinkController extends Controller
             $agent = $this->getUserAgent();
 
             WaLinkClick::create([
-                'wa_link_id'  => $waLink->id,
-                'ip_address'  => $ip,
+                'wa_link_id' => $waLink->id,
+                'ip_address' => $ip,
 
-                // 🔥 GEO (FIXED)
-                'country'     => $location['country_name'] ?? 'Unknown',
+                // 🔥 COUNTRY FORCE
+                'country' => $location['country_name']
+                    ?? $location['country']
+                    ?? 'Unknown',
 
-
-                // 👇 YAHI CHANGE HAI
+                // 🔥 CITY (fallbacks)
                 'city' => $location['city']
                     ?? $location['district']
                     ?? $location['state_prov']
                     ?? 'Unknown',
-                    
-                'user_agent'  => request()->userAgent(),
-                'referrer'    => request()->headers->get('referer'),
 
+                'user_agent' => request()->userAgent(),
+                'referrer' => request()->headers->get('referer'),
                 'device_type' => $agent['device_type'] ?? 'Unknown',
-                'browser'     => $agent['browser'] ?? 'Unknown',
-                'platform'    => $agent['platform'] ?? 'Unknown',
+                'browser' => $agent['browser'] ?? 'Unknown',
+                'platform' => $agent['platform'] ?? 'Unknown',
             ]);
         } catch (\Throwable $e) {
             \Log::error('Click tracking error: ' . $e->getMessage());
