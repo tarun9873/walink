@@ -66,7 +66,7 @@ return [
         'ipgeolocation' => [
             'class' => \Torann\GeoIP\Services\IPGeoLocation::class,
             'secure' => true,
-            'key' => env('a39770b4267a4d7a821b33e1e1b6bb8e'),
+            'key' => env('IPGEOLOCATION_KEY'),
             'continent_path' => storage_path('app/continents.json'),
             'lang' => 'en',
         ],
