@@ -6,6 +6,21 @@
 @section('page-subtitle', 'Welcome back, ' . ($user->name ?? 'User'))
 
 @section('content')
+
+@if(session()->has('impersonator_id'))
+    <form action="{{ route('admin.impersonate.leave') }}"
+          method="POST"
+          class="bg-yellow-200 border border-yellow-300 p-2 mb-4 text-center">
+        @csrf
+        <span class="text-sm text-yellow-800">
+            You are logged in as this user
+        </span>
+        <button class="ml-3 text-blue-600 font-semibold">
+            Return to Admin
+        </button>
+    </form>
+@endif
+
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 

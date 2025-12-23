@@ -133,7 +133,23 @@ Route::middleware(['auth', 'admin'])
   // ADD CALL LINKS HERE FOR ADMIN
  // ADD CALL LINKS HERE FOR ADMIN
 
+// ✅ Only login-as-user needs admin
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
+    Route::post('/impersonate/{user}', [AdminController::class, 'impersonate'])
+        ->name('impersonate');
+});
+
+// ✅ Return to admin — ONLY auth required
+Route::middleware('auth')
+    ->post('/admin/impersonate-leave', [AdminController::class, 'leaveImpersonate'])
+    ->name('admin.impersonate.leave');
+
+
+    
 // Admin Call Links Routes (with admin prefix)
 Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/call-links', [CallLinkController::class, 'index'])->name('admin.call-links.index');

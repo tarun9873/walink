@@ -75,6 +75,15 @@
                                    class="text-blue-600 hover:text-blue-900" title="Assign Plan">
                                     <i class="fas fa-gift"></i>
                                 </a>
+
+                                  <!-- 🔥 LOGIN AS USER -->
+    <form action="{{ route('admin.impersonate.leave') }}" method="POST">
+    @csrf
+    <button class="ml-3 text-blue-600 font-semibold">
+        Return to Admin
+    </button>
+</form>
+
                                 
                                 @if($user->hasActiveSubscription())
                                 <form action="{{ route('admin.extend-plan', $user->id) }}" method="POST" class="inline">

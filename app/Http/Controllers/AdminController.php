@@ -750,4 +750,43 @@ public function transferLinks(Request $request, User $user)
             ]);
         }
     }
+
+    /**
+ * Admin → Login as User
+ */
+public function impersonate(User $user)
+{
+    if (!auth()->user()->is_admin) {
+        abort(403);
+    }
+
+    // Admin ID save
+    session([
+        'impersonator_id' => auth()->id(),
+    ]);
+
+    // Login as user
+    Auth::login($user);
+
+    return redirect('/dashboard')
+        ->with('success', 'Logged in as ' . $user->email);
+}
+
+/**
+ * Return back to Admin
+ */
+public function leaveImpersonate()
+{
+    if (!session()->has('impersonator_id')) {
+        return redirect('/dashboard');
+    }
+
+    $adminId = session()->pull('impersonator_id');
+
+    Auth::loginUsingId($adminId);
+
+    return redirect('/admin/dashboard')
+        ->with('success', 'Back to Admin account');
+}
+
 }
