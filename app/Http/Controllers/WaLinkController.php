@@ -395,7 +395,11 @@ private function trackClick(WaLink $waLink)
 
             // 🔥 GEO (FIXED)
             'country'     => $location['country_name'] ?? 'Unknown',
-            'city'        => $location['city'] ?? 'Unknown',
+            'city' => $location['city']
+    ?? $location['district']
+    ?? $location['state_prov']
+    ?? 'Unknown',
+
 
             'user_agent'  => request()->userAgent(),
             'referrer'    => request()->headers->get('referer'),
