@@ -3,70 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Dynamic Title -->
-    <title>@yield('title', 'Walive – WhatsApp Link Generator & QR Maker')</title>
 
-    <!-- Dynamic Meta Description -->
-    <meta name="description" content="@yield('meta_description', 'Walive: Free WhatsApp link generator and QR code maker. Create wa.me style short links, custom messages & QR codes.')"/>
+    <!-- 🔥 SEO TITLE -->
+    <title>@yield('title', 'Wa.link : WhatsApp Link Generator | Create WhatsApp Link Free')</title>
 
-    <!-- Dynamic Keywords -->
-    <meta name="keywords" content="@yield('meta_keywords', 'WhatsApp link generator, WhatsApp QR code, wa.me link, Walive, WhatsApp link maker')" />
+    <!-- 🔥 META DESCRIPTION -->
+    <meta name="description" content="@yield(
+        'meta_description',
+        'Looking for wa.link? Create WhatsApp links, wa.me URLs and QR codes free using this powerful wa.link alternative. No signup required.'
+    )">
 
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <link rel="canonical" href="@yield('canonical', url()->current())" />
-<meta name="google-site-verification" content="nUEk5nKNRKQ_5AgeX7tsxFdPsnOc6miWZu81C-BXLz4" />
-    <!-- OG -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="@yield('og_title', 'Walive – WhatsApp Link Generator & QR Code Maker')" />
-    <meta property="og:description" content="@yield('og_description', 'Create WhatsApp links with custom messages & QR codes — fast, free, no signup')" />
-    <meta property="og:image" content="@yield('og_image', 'https://walive.link/assets/og-image.png')" />
-    <meta property="og:url" content="{{ url()->current() }}" />
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1611077743386646');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1611077743386646&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+    <!-- 🔥 SEO KEYWORDS -->
+    <meta name="keywords" content="@yield(
+        'meta_keywords',
+        'wa.link, wa link, Wa.link alternative, WhatsApp link generator, create WhatsApp link, wa.me link, WhatsApp QR code'
+    )">
 
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
 
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="@yield('twitter_title', 'Walive – WhatsApp Link Generator & QR Code Maker')" />
-    <meta name="twitter:description" content="@yield('twitter_description', 'Create WhatsApp links with QR codes for business, sellers & creators')" />
-    <meta name="twitter:image" content="@yield('twitter_image', 'https://walive.link/assets/og-image.png')" />
+    <!-- Google Search Console -->
+    <meta name="google-site-verification" content="nUEk5nKNRKQ_5AgeX7tsxFdPsnOc6miWZu81C-BXLz4">
 
-    <!-- All Favicons, PWA, Theme Color (static, OK) -->
-    <link rel="icon" href="/images/iconwalive.webp" />
-    <link rel="icon" type="image/x-icon" href="/images/iconwalive.webp">
+    <!-- 🔥 OPEN GRAPH -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="wa.link Alternative – Create WhatsApp Link Free">
+    <meta property="og:description" content="Free wa.link alternative to create WhatsApp links, wa.me URLs and QR codes without login.">
+    <meta property="og:image" content="https://walive.link/assets/og-image.png">
+    <meta property="og:url" content="{{ url()->current() }}">
+
+    <!-- 🔥 TWITTER -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="wa.link Alternative – WhatsApp Link Generator">
+    <meta name="twitter:description" content="Create WhatsApp links & QR codes free. Best wa.link alternative online.">
+    <meta name="twitter:image" content="https://walive.link/assets/og-image.png">
+
+    <!-- 🔥 FAVICON -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#25D366">
 
-    <!-- Custom per-page meta -->
-    @stack('meta')
-
-
-
-<!-- Schema (basic) -->
-<script type="application/ld+json">
-{
-"@context":"https://schema.org",
-"@type":"WebSite",
-"name":"Walive",
-"url":"https://walive.link/",
-"description":"Create WhatsApp short links, custom messages, and QR codes instantly. A perfect alternative to wa.link."
-}
-</script>
+    <!-- 🔥 SCHEMA -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "wa.link Alternative",
+      "operatingSystem": "Web",
+      "applicationCategory": "UtilityApplication",
+      "description": "Free wa.link alternative to create WhatsApp links, wa.me URLs and QR codes.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -160,7 +155,7 @@ src="https://www.facebook.com/tr?id=1611077743386646&ev=PageView&noscript=1"
                     <a href="{{route('pricing')}}" class="nav-link">Home</a>
                     <a href="{{route('about')}}" class="nav-link">About Us</a>
                     
-                    <a href="/blog" class="nav-link">Blog</a>
+                    
                     <a href="/contact" class="nav-link">Contact</a>
                     <!-- Auth Buttons -->
                     @auth
@@ -192,8 +187,7 @@ src="https://www.facebook.com/tr?id=1611077743386646&ev=PageView&noscript=1"
                 <div class="flex flex-col space-y-4">
                     <a href="{{route('pricing')}}" class="nav-link py-2">Home</a>
                     <a href="{{route('about')}}" class="nav-link py-2">About Us</a>
-                   
-                    <a href="/blog" class="nav-link py-2">Blog</a>
+                  
                      <a href="/contact" class="nav-link py-2">Contact</a>
                     @auth
                         <div class="pt-4 border-t border-gray-100">
