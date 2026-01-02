@@ -77,6 +77,31 @@
             </div>
         </div>
     </div>
+<form method="GET" action="{{ route('wa-links.index') }}" class="mb-4">
+    <div class="flex flex-col sm:flex-row gap-3">
+        <input
+            type="text"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Search by name or URL..."
+            class="w-full sm:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
+        >
+
+        <button
+            type="submit"
+            class="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+        >
+            Search
+        </button>
+
+        @if(request()->filled('search'))
+            <a href="{{ route('wa-links.index') }}"
+               class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                Clear
+            </a>
+        @endif
+    </div>
+</form>
 
     <!-- Links Table -->
     <div class="bg-white rounded-xl md:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">

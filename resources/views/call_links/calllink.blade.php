@@ -266,73 +266,7 @@
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             
-                            <!-- URL Preview Section - FIXED -->
-                            <div class="mt-6">
-                                <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                                                <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <h4 class="text-sm font-semibold text-gray-900">Your Call Link</h4>
-                                                <p class="text-xs text-gray-500">Copy and share this link anywhere</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Copy Button - NO onclick attribute -->
-                                        <button type="button" 
-                                                id="copyButton"
-                                                class="inline-flex items-center px-3.5 py-1.5 text-xs font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
-                                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                                            </svg>
-                                            Copy
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- URL Preview Box with Click-to-Copy - NO onclick attribute -->
-                                    <div class="relative group">
-                                        <div id="linkPreview" 
-                                             class="flex items-center justify-between bg-white rounded-lg border border-gray-300 p-3 hover:bg-gray-50 hover:border-gray-400 cursor-pointer transition">
-                                            <div class="flex items-center overflow-hidden">
-                                                <svg class="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                                </svg>
-                                                <code class="text-sm font-mono text-gray-800 truncate">
-                                                    {{ url('/') }}/call/<span id="slugPreview" class="font-semibold text-blue-600">{{ old('slug', $callLink->slug ?? 'your-slug') }}</span>
-                                                </code>
-                                            </div>
-                                            <div class="flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Copy Success Tooltip -->
-                                        <div id="copySuccess" 
-                                             class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none">
-                                            <div class="flex items-center">
-                                                <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                </svg>
-                                                Copied to clipboard!
-                                            </div>
-                                            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-green-600"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <p class="text-xs text-gray-500 mt-3 flex items-center">
-                                        <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Click anywhere on the link above to copy, or use the copy button
-                                    </p>
-                                </div>
-                            </div>
+                           
                         </div>
 
                         <!-- Active Status (Edit only) -->
@@ -435,72 +369,11 @@
                             </div>
                         </div>
 
-                        <!-- Quick Stats -->
-                        <div class="mt-6 pt-6 border-t border-gray-100">
-                            <h4 class="text-sm font-semibold text-gray-900 mb-3">Benefits</h4>
-                            <ul class="space-y-2">
-                                <li class="flex items-center text-sm">
-                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span class="text-gray-600">No app download required</span>
-                                </li>
-                                <li class="flex items-center text-sm">
-                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span class="text-gray-600">Works on all devices</span>
-                                </li>
-                                <li class="flex items-center text-sm">
-                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span class="text-gray-600">Track call analytics</span>
-                                </li>
-                                <li class="flex items-center text-sm">
-                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span class="text-gray-600">Increase customer reach</span>
-                                </li>
-                            </ul>
-                        </div>
+                     
                     </div>
                 </div>
 
-                <!-- Pro Tips Card -->
-                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 shadow-lg p-5">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                                <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h4 class="text-sm font-bold text-amber-900">Pro Tips</h4>
-                            <ul class="mt-3 space-y-2">
-                                <li class="flex items-start text-sm">
-                                    <span class="text-amber-500 font-bold mr-2">•</span>
-                                    <span class="text-amber-800">Use descriptive names for different departments</span>
-                                </li>
-                                <li class="flex items-start text-sm">
-                                    <span class="text-amber-500 font-bold mr-2">•</span>
-                                    <span class="text-amber-800">Create unique slugs for easy tracking</span>
-                                </li>
-                                <li class="flex items-start text-sm">
-                                    <span class="text-amber-500 font-bold mr-2">•</span>
-                                    <span class="text-amber-800">Add to email signatures and business cards</span>
-                                </li>
-                                <li class="flex items-start text-sm">
-                                    <span class="text-amber-500 font-bold mr-2">•</span>
-                                    <span class="text-amber-800">Monitor analytics to optimize performance</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+               
             </div>
         </div>
     </div>

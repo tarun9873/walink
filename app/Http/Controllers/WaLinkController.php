@@ -44,28 +44,57 @@ class WaLinkController extends Controller
     /**
      * List links for logged-in user (paginated)
      */
-    public function index()
-    {
-        $user = auth()->user();
+    public function index(Request $request)
+{
+    $user = auth()->user();
 
-        // Get subscription and remaining links
-        $subscription = Subscription::where('user_id', $user->id)
-            ->where('status', 'active')
-            ->where('expires_at', '>', now())
-            ->with('plan')
-            ->first();
+    // ================= SUBSCRIPTION =================
+    $subscription = Subscription::where('user_id', $user->id)
+        ->where('status', 'active')
+        ->where('expires_at', '>', now())
+        ->with('plan')
+        ->first();
 
-        // Calculate remaining links
-        $remainingLinks = $user->remaining_links ?? 0;
+    // ================= REMAINING LINKS =================
+    $remainingLinks = $user->remaining_links ?? 0;
 
-        $links = $user
-            ->waLinks()
-            ->select('id', 'name', 'slug', 'phone', 'message', 'clicks', 'is_active', 'created_at')
-            ->latest()
-            ->paginate(15);
+    // ================= LINKS QUERY =================
+    $query = $user->waLinks()
+        ->select(
+            'id',
+            'name',
+            'slug',
+            'phone',
+            'message',
+            'clicks',
+            'is_active',
+            'created_at'
+        );
 
-        return view('wa_links.index', compact('links', 'subscription', 'remainingLinks'));
+    // 🔍 SEARCH FILTER (NAME + URL/SLUG ONLY)
+    if ($request->filled('search')) {
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('slug', 'like', "%{$search}%");
+        });
     }
+
+    // ================= PAGINATION =================
+    $links = $query
+        ->latest()
+        ->paginate(15)
+        ->withQueryString(); // 🔥 search pagination fix
+
+    return view('wa_links.index', compact(
+        'links',
+        'subscription',
+        'remainingLinks'
+    ));
+}
+
+    
 
     /**
      * Show create form
