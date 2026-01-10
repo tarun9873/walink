@@ -234,18 +234,39 @@ class WaLinkController extends Controller
     /**
      * Edit form
      */
-    public function edit(WaLink $waLink)
-    {
-        $this->authorize('update', $waLink);
-        $remainingLinks = auth()->user()->remaining_links;
-        return view('wa_links.edit', compact('waLink', 'remainingLinks'));
+   public function edit(WaLink $waLink)
+{
+    $hasActivePlan = Subscription::where('user_id', auth()->id())
+        ->where('status', 'active')
+        ->where('expires_at', '>', now())
+        ->exists();
+
+    if (!$hasActivePlan) {
+        return redirect()->route('dashboard')
+            ->with('error','Your subscription has expired.');
     }
+
+    $this->authorize('update', $waLink);
+
+    $remainingLinks = auth()->user()->remaining_links;
+    return view('wa_links.edit', compact('waLink', 'remainingLinks'));
+}
+
 
     /**
      * Update existing link (phone editable)
      */
     public function update(Request $request, WaLink $waLink)
     {
+      $hasActivePlan = Subscription::where('user_id', auth()->id())
+        ->where('status', 'active')
+        ->where('expires_at', '>', now())
+        ->exists();
+
+    if (!$hasActivePlan) {
+        return redirect()->route('dashboard')
+            ->with('error','Your subscription has expired.');
+    }
         $this->authorize('update', $waLink);
 
         $request->validate([
@@ -293,6 +314,16 @@ class WaLinkController extends Controller
      */
     public function destroy(WaLink $waLink)
     {
+          $hasActivePlan = Subscription::where('user_id', auth()->id())
+        ->where('status', 'active')
+        ->where('expires_at', '>', now())
+        ->exists();
+
+    if (!$hasActivePlan) {
+        return redirect()->route('dashboard')
+            ->with('error','Your subscription has expired.');
+    }
+    
         $this->authorize('delete', $waLink);
         $waLink->delete();
         return redirect()->route('wa-links.index')->with('success', 'Link deleted successfully!');
@@ -301,29 +332,44 @@ class WaLinkController extends Controller
     /**
      * Public redirect by slug — friendly handling for missing/inactive
      */
-    public function redirect($slug)
-    {
+  public function redirect($slug)
+{
+    try {
+        $link = WaLink::where('slug', $slug)->first();
 
-        try {
-            $link = WaLink::where('slug', $slug)->first();
-
-            if (!$link || ! $link->is_active) {
-                Log::info("Missing or inactive link visited: {$slug}", ['ip' => request()->ip()]);
-                return redirect()->route('wa-links.notfound');
-            }
-
-            // Track the click with detailed analytics
-            $this->trackClick($link);
-
-            // increment clicks (atomic)
-            $link->increment('clicks');
-
-            return redirect()->away($link->full_url);
-        } catch (\Throwable $e) {
-            Log::error("Error redirecting slug {$slug}: " . $e->getMessage(), ['slug' => $slug, 'ip' => request()->ip()]);
+        if (!$link || ! $link->is_active) {
+            Log::info("Missing or inactive link visited: {$slug}", ['ip' => request()->ip()]);
             return redirect()->route('wa-links.notfound');
         }
+
+        // 🔴 CHECK USER SUBSCRIPTION
+        $hasActivePlan = Subscription::where('user_id', $link->user_id)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
+
+        if (!$hasActivePlan) {
+            return response()->view('wa_links.link_expired', [], 403);
+        }
+
+        // Track click
+        $this->trackClick($link);
+
+        // increment clicks
+        $link->increment('clicks');
+
+        return redirect()->away($link->full_url);
+
+    } catch (\Throwable $e) {
+        Log::error("Error redirecting slug {$slug}: " . $e->getMessage(), [
+            'slug' => $slug,
+            'ip' => request()->ip()
+        ]);
+
+        return redirect()->route('wa-links.notfound');
     }
+}
+
 
     /**
      * Show analytics for a specific WhatsApp link
