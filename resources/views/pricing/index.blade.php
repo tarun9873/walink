@@ -51,12 +51,19 @@
                 <div class="group relative">
                     <!-- Popular Badge -->
                     @if($plan->is_popular)
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                        <div class="whatsapp-bg-gradient text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center space-x-2">
-                            <i class="fas fa-fire"></i>
-                            <span>MOST POPULAR</span>
-                        </div>
-                    </div>
+                   <div class="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 z-10">
+    <div class="whatsapp-bg-gradient text-white 
+        px-3 py-1 text-xs 
+        sm:px-4 sm:py-1.5 sm:text-sm 
+        md:px-6 md:py-2 md:text-sm
+        rounded-full font-bold shadow-lg 
+        flex items-center space-x-1 sm:space-x-2">
+
+        <i class="fas fa-fire text-xs sm:text-sm"></i>
+        <span class="whitespace-nowrap">MOST POPULAR</span>
+
+    </div>
+</div>
                     @endif
                     
                     <div class="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden 
@@ -80,9 +87,9 @@
                                     <span class="text-gray-500 ml-2 billing-label">/{{ $plan->billing_cycle }}</span>
                                     
                                 </div>
-                                <p class="text-gray-500 text-sm mt-2">
+                                {{-- <p class="text-gray-500 text-sm mt-2">
                                     {{ $plan->billing_cycle == 'year' ? 'Billed annually' : 'Billed monthly' }}
-                                </p>
+                                </p> --}}
                             </div>
                             
                             <!-- Features from Database -->
