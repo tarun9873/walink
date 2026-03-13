@@ -29,6 +29,22 @@
                 </div>
             </div>
 
+<!-- Billing Toggle -->
+<div class="flex justify-center mb-10">
+    <div class="bg-gray-100 p-1 rounded-lg flex">
+        <button id="monthlyBtn" 
+            class="billing-toggle px-6 py-2 rounded-lg font-medium bg-white shadow">
+            Monthly
+        </button>
+
+        <button id="yearlyBtn" 
+            class="billing-toggle px-6 py-2 rounded-lg font-medium text-gray-600">
+            Yearly
+        </button>
+    </div>
+</div>
+
+
             <!-- Plans Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
                 @foreach($plans as $plan)
@@ -57,8 +73,12 @@
                             <!-- Price -->
                             <div class="text-center mb-6">
                                 <div class="flex items-baseline justify-center">
-                                    <span class="text-5xl font-bold text-gray-900">₹{{ number_format($plan->price, 0) }}</span>
-                                    <span class="text-gray-500 ml-2">/{{ $plan->billing_cycle }}</span>
+                                    <span class="text-5xl font-bold text-gray-900 price"
+      data-monthly="{{ $plan->price }}">
+      ₹{{ number_format($plan->price, 0) }}
+</span>
+                                    <span class="text-gray-500 ml-2 billing-label">/{{ $plan->billing_cycle }}</span>
+                                    
                                 </div>
                                 <p class="text-gray-500 text-sm mt-2">
                                     {{ $plan->billing_cycle == 'year' ? 'Billed annually' : 'Billed monthly' }}
@@ -258,3 +278,58 @@
         </div>
     </main>
 @endsection
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const monthlyBtn = document.getElementById("monthlyBtn");
+    const yearlyBtn = document.getElementById("yearlyBtn");
+
+    const prices = document.querySelectorAll(".price");
+    const billingLabels = document.querySelectorAll(".billing-label");
+
+    monthlyBtn.addEventListener("click", function () {
+
+        monthlyBtn.classList.add("bg-white","shadow");
+        yearlyBtn.classList.remove("bg-white","shadow");
+
+        prices.forEach(price => {
+
+            let monthly = price.dataset.monthly;
+
+            price.innerText = "₹" + parseInt(monthly).toLocaleString();
+        });
+
+        billingLabels.forEach(label => {
+            label.innerText = "/month";
+        });
+
+    });
+
+
+    yearlyBtn.addEventListener("click", function () {
+
+        yearlyBtn.classList.add("bg-white","shadow");
+        monthlyBtn.classList.remove("bg-white","shadow");
+
+        prices.forEach(price => {
+
+            let monthly = price.dataset.monthly;
+
+            let yearly = monthly * 12;
+
+            price.innerText = "₹" + parseInt(yearly).toLocaleString();
+
+        });
+
+        billingLabels.forEach(label => {
+            label.innerText = "/year";
+        });
+
+    });
+
+});
+
+</script>

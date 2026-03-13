@@ -128,7 +128,8 @@
                         </div>
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0
                             {{ $l->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $l->is_active ? 'Active' : 'Inactive' }}
+                           {{ $l->is_active ? 'Working' : 'Inactive' }}
+
                         </span>
                     </div>
 
@@ -290,12 +291,18 @@
                                 <span class="text-xs text-gray-500 ml-1">clicks</span>
                             </div>
                         </td>
-                        <td class="px-4 md:px-6 py-4">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-                                {{ $l->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $l->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
+                      <td class="px-4 md:px-6 py-4">
+    @if($l->is_active)
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+            ✅ Working
+        </span>
+    @else
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+            ❌ Inactive
+        </span>
+    @endif
+</td>
+
                         <td class="px-4 md:px-6 py-4">
                             <div class="flex justify-end space-x-2">
                                 <!-- Analytics Button -->

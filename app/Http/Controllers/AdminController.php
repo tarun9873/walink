@@ -338,7 +338,7 @@ public function transferLinks(Request $request, User $user)
 
             Log::info('📋 Subscription Details', [
                 'subscription_id' => $subscription->id,
-                'current_extra_links' => $subscription->extra_links,
+                'current_extra_links' => $subscription->extra_links,  
                 'status' => $subscription->status
             ]);
 
