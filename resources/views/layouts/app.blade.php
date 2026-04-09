@@ -7,13 +7,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
  
     
- <title>Walive – WhatsApp Link Generator & QR Maker</title>
+ <title>Wa-link – WhatsApp Link Generator & QR Maker</title>
 
 
 <meta name="description" content="Walive: Free WhatsApp link generator and QR code maker. Create wa.me style short links, custom pre-filled messages and QR codes — share on Instagram, websites, product pages and marketing." />
 <meta name="keywords" content="WhatsApp link generator, WhatsApp short link, wa.me, wa.link alternative, WhatsApp QR code, WhatsApp click to chat, WhatsApp link maker, Walive" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-<link rel="canonical" href="https://walive.link/" />
+<link rel="canonical" href="https://wa-app.link/" />
 
 <!-- Viewport & mobile -->
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,8 +23,8 @@
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Walive – WhatsApp Link Generator & QR Code Maker" />
 <meta property="og:description" content="Create wa.me-style WhatsApp links with custom pre-filled messages and QR codes. Fast, free, no signup." />
-<meta property="og:url" content="https://walive.link/" />
-<meta property="og:image" content="https://walive.link/assets/og-image.png" />
+<meta property="og:url" content="https://wa-app.link/" />
+<meta property="og:image" content="https://wa-app.link/assets/og-image.png" />
 <meta property="og:image:alt" content="Walive - WhatsApp Link Generator & QR Code Maker" />
 <meta property="og:site_name" content="Walive" />
 
@@ -34,12 +34,12 @@
 <meta name="twitter:creator" content="@Walive" />
 <meta name="twitter:title" content="Walive – WhatsApp Link Generator & QR Code Maker" />
 <meta name="twitter:description" content="Create WhatsApp links with custom messages and QR codes. Perfect for businesses, sellers and creators." />
-<meta name="twitter:image" content="https://walive.link/assets/og-image.png" />
+<meta name="twitter:image" content="https://wa-app.link/assets/og-image.png" />
 
 <!-- Canonical alternatives / hreflang (example for English + Hindi) -->
-<link rel="alternate" href="https://walive.link/" hreflang="en" />
-<link rel="alternate" href="https://walive.link/hi/" hreflang="hi" />
-<link rel="alternate" href="https://walive.link/" hreflang="x-default" />
+<link rel="alternate" href="https://wa-app.link/" hreflang="en" />
+<link rel="alternate" href="https://wa-app.link/hi/" hreflang="hi" />
+<link rel="alternate" href="https://wa-app.link/" hreflang="x-default" />
 
 <!-- Favicons -->
 <link rel="icon" href="/images/iconwalive.webp" />
@@ -70,7 +70,7 @@
 
 
 <!-- Sitemap (helps crawlers find pages) -->
-<link rel="sitemap" type="application/xml" title="Sitemap" href="https://walive.link/sitemap.xml" />
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://wa-app.link/sitemap.xml" />
 
 
 
@@ -80,11 +80,11 @@
 "@context":"https://schema.org",
 "@type":"WebSite",
 "name":"Walive",
-"url":"https://walive.link/",
+"url":"https://wa-app.link/",
 "description":"Create WhatsApp short links, custom messages, and QR codes instantly. A perfect alternative to wa.link."
 }
 </script>
-    
+    <meta name="google-site-verification" content="9MP9Zx2XFOdXfpqkqB18JMzQvZJ08822yAXQzGP7pBA" />
     <!-- Modern UI Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
