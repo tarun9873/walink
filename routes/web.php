@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
@@ -19,7 +19,7 @@ use App\Http\Controllers\SubscriptionController;
 // ===================================================
 // 1️⃣ AUTH ROUTES (Must be FIRST, before slug route)
 // ===================================================
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // ===================================================
 // 2️⃣ PUBLIC ROUTES
@@ -66,16 +66,16 @@ Route::middleware('auth')->group(function () {
 // ===================================================
 // 6️⃣ WA-LINKS ROUTES (Protected)
 // ===================================================
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Index, show, edit, update, destroy - basic auth only
     Route::get('/wa-links', [WaLinkController::class, 'index'])->name('wa-links.index');
     Route::get('/wa-links/{waLink}/edit', [WaLinkController::class, 'edit'])->name('wa-links.edit');
     Route::put('/wa-links/{waLink}', [WaLinkController::class, 'update'])->name('wa-links.update');
     Route::delete('/wa-links/{waLink}', [WaLinkController::class, 'destroy'])->name('wa-links.destroy');
-    
+
     // Analytics
     Route::get('/wa-links/{id}/analytics', [WaLinkController::class, 'analytics'])->name('wa-links.analytics');
-    
+
     // Create and Store with subscription and link limit check
     Route::middleware(['subscription', 'link.limit'])->group(function () {
         Route::get('/wa-links/create', [WaLinkController::class, 'create'])->name('wa-links.create');
@@ -91,49 +91,48 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
-    // ================= Dashboard =================
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        // ================= Dashboard =================
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-    // ================= Users =================
-    Route::get('/users', [AdminController::class, 'users'])->name('users');
-    Route::get('/users/{id}', [AdminController::class, 'viewUser'])->name('view-user');
+        // ================= Users =================
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/{id}', [AdminController::class, 'viewUser'])->name('view-user');
 
-    // 🔥 TRANSFER LINKS (FIXED & WORKING)
-    Route::post(
-        '/users/{user}/transfer-links',
-        [AdminController::class, 'transferLinks']
-    )->name('users.transfer-links');
+        // 🔥 TRANSFER LINKS (FIXED & WORKING)
+        Route::post(
+            '/users/{user}/transfer-links',
+            [AdminController::class, 'transferLinks']
+        )->name('users.transfer-links');
 
-    // User Subscription Actions
-    Route::post('/users/{user}/add-links', [AdminController::class, 'addLinks'])->name('add-links');
-    Route::post('/users/{user}/extend-plan', [AdminController::class, 'extendUserPlan'])->name('extend-plan');
-    Route::post('/users/{user}/upgrade-plan', [AdminController::class, 'upgradePlan'])->name('upgrade-plan');
-    Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
+        // User Subscription Actions
+        Route::post('/users/{user}/add-links', [AdminController::class, 'addLinks'])->name('add-links');
+        Route::post('/users/{user}/extend-plan', [AdminController::class, 'extendUserPlan'])->name('extend-plan');
+        Route::post('/users/{user}/upgrade-plan', [AdminController::class, 'upgradePlan'])->name('upgrade-plan');
+        Route::post('/cancel-subscription/{user}', [AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
 
-    // ================= Plans =================
-    Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
-    Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');
-    Route::post('/toggle-plan/{plan}', [AdminController::class, 'togglePlanStatus'])->name('toggle-plan');
-    Route::delete('/plans/{plan}/delete', [AdminController::class, 'deletePlan'])->name('delete-plan');
+        // ================= Plans =================
+        Route::get('/plans', [AdminController::class, 'plans'])->name('plans');
+        Route::post('/create-plan', [AdminController::class, 'createPlan'])->name('create-plan');
+        Route::post('/toggle-plan/{plan}', [AdminController::class, 'togglePlanStatus'])->name('toggle-plan');
+        Route::delete('/plans/{plan}/delete', [AdminController::class, 'deletePlan'])->name('delete-plan');
 
-    // ================= Assign Plan =================
-    Route::get('/assign-plan/{userId?}', [AdminController::class, 'assignPlanForm'])->name('assign-plan.form');
-    Route::post('/assign-plan', [AdminController::class, 'assignPlan'])->name('assign-plan');
+        // ================= Assign Plan =================
+        Route::get('/assign-plan/{userId?}', [AdminController::class, 'assignPlanForm'])->name('assign-plan.form');
+        Route::post('/assign-plan', [AdminController::class, 'assignPlan'])->name('assign-plan');
 
-    // ================= Subscriptions =================
-    Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
+        // ================= Subscriptions =================
+        Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
 
-    // ================= Debug / Utility =================
-    Route::get('/debug/database', [AdminController::class, 'checkDatabase'])->name('debug.database');
-    Route::get('/debug/fix-extra-links', [AdminController::class, 'fixExtraLinksColumn'])->name('debug.fix-extra-links');
-    Route::get('/test/add-links/{userId}/{links}', [AdminController::class, 'testAddLinks'])->name('test.add-links');
+        // ================= Debug / Utility =================
+        Route::get('/debug/database', [AdminController::class, 'checkDatabase'])->name('debug.database');
+        Route::get('/debug/fix-extra-links', [AdminController::class, 'fixExtraLinksColumn'])->name('debug.fix-extra-links');
+        Route::get('/test/add-links/{userId}/{links}', [AdminController::class, 'testAddLinks'])->name('test.add-links');
 
-    // ================= Revenue (AJAX) =================
-    Route::get('/revenue-data', [AdminController::class, 'getRevenueData'])->name('revenue-data');
-
-});
-  // ADD CALL LINKS HERE FOR ADMIN
- // ADD CALL LINKS HERE FOR ADMIN
+        // ================= Revenue (AJAX) =================
+        Route::get('/revenue-data', [AdminController::class, 'getRevenueData'])->name('revenue-data');
+    });
+// ADD CALL LINKS HERE FOR ADMIN
+// ADD CALL LINKS HERE FOR ADMIN
 
 // ✅ Only login-as-user needs admin
 Route::middleware(['auth', 'admin'])
@@ -141,9 +140,9 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
-    Route::post('/impersonate/{user}', [AdminController::class, 'impersonate'])
-        ->name('impersonate');
-});
+        Route::post('/impersonate/{user}', [AdminController::class, 'impersonate'])
+            ->name('impersonate');
+    });
 
 // ✅ Return to admin — ONLY auth required
 Route::middleware('auth')
@@ -151,7 +150,7 @@ Route::middleware('auth')
     ->name('admin.impersonate.leave');
 
 
-    
+
 // Admin Call Links Routes (with admin prefix)
 Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/call-links', [CallLinkController::class, 'index'])->name('admin.call-links.index');
@@ -183,5 +182,3 @@ Route::get('/home', function () {
 Route::get('/{slug}', [WaLinkController::class, 'redirect'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('wa-links.redirect');
-
-   

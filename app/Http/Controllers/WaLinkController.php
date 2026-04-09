@@ -234,22 +234,13 @@ class WaLinkController extends Controller
     /**
      * Edit form
      */
-   public function edit(WaLink $waLink)
+public function edit(WaLink $waLink)
 {
-    $hasActivePlan = Subscription::where('user_id', auth()->id())
-        ->where('status', 'active')
-        ->where('expires_at', '>', now())
-        ->exists();
-
-    if (!$hasActivePlan) {
-        return redirect()->route('dashboard')
-            ->with('error','Your subscription has expired.');
-    }
-
-    $this->authorize('update', $waLink);
-
-    $remainingLinks = auth()->user()->remaining_links;
-    return view('wa_links.edit', compact('waLink', 'remainingLinks'));
+    dd([
+    'login_user' => auth()->id(),
+    'link_id' => $waLink->id,
+    'link_user' => $waLink->user_id,
+]);
 }
 
 
