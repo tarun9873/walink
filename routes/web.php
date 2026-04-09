@@ -15,11 +15,23 @@ use App\Http\Controllers\SubscriptionController;
 | Web Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/test-backup', function () {
+    \Log::info('Backup route hit at: ' . now());
+    Artisan::call('backup:database');
+    return 'Backup run successfully!';
+});
 
+Route::get('/clear-cache', function () {
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    return 'Cache cleared';
+});
 // ===================================================
 // 1️⃣ AUTH ROUTES (Must be FIRST, before slug route)
 // ===================================================
 require __DIR__ . '/auth.php';
+
+
 
 // ===================================================
 // 2️⃣ PUBLIC ROUTES
@@ -36,7 +48,7 @@ Route::get('/privacy-policy', function () {
     return view('pricing.privacy');
 })->name('privacy-policy');
 
-// Route::get('/link-not-found', [WaLinkController::class, 'notfound'])->name('wa-links.notfound');
+Route::get('/link-not-found', [WaLinkController::class, 'notfound'])->name('wa-links.notfound');
 
 // ===================================================
 // 3️⃣ USER DASHBOARD (Auth required)
@@ -187,17 +199,4 @@ Route::get('/{slug}', [WaLinkController::class, 'redirect'])
 
 
 
- use Illuminate\Support\Facades\Artisan;
-
-Route::get('/test-backup', function () {
-    \Log::info('Backup route hit at: ' . now());
-    Artisan::call('backup:database');
-    return 'Backup run successfully!';
-});
-
-
-Route::get('/clear-cache', function () {
-    Artisan::call('route:clear');
-    Artisan::call('config:clear');
-    return 'Cache cleared';
-});
+    
