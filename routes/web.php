@@ -182,3 +182,14 @@ Route::get('/home', function () {
 Route::get('/{slug}', [WaLinkController::class, 'redirect'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('wa-links.redirect');
+
+
+
+
+
+    use Illuminate\Support\Facades\Artisan;
+
+Route::get('/test-backup', function () {
+    Artisan::call('backup:database');
+    return 'Backup run successfully!';
+});

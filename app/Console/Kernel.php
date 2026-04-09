@@ -18,6 +18,14 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:database')->dailyAt('00:00');
     }
 
+
+
+
+
+
+
+    
+
     /**
      * Register the commands for the application.
      *
