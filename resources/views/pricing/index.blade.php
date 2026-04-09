@@ -125,7 +125,7 @@
                                 </a>
                             @else
                                 <!-- Paid Plan - DIRECT WhatsApp link -->
-                                <a href="https://walive.link/pricing-buy" 
+                                <a href="https://wa-app.link/pricing-buy" 
                                    target="_blank"
                                    class="block w-full whatsapp-bg-gradient
                                           text-white text-center py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 
