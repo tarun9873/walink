@@ -184,30 +184,7 @@ Route::get('/home', function () {
 // ===================================================
 // 8️⃣ CATCH-ALL SLUG (ALWAYS LAST!)
 // ===================================================
-// ✅ TEST ROUTES (upar hone chahiye)
-Route::get('/test-backup', function () {
-    try {
-        \Log::info('Backup route hit at: ' . now());
 
-        $exitCode = \Artisan::call('backup:database');
-
-        return 'DONE. Exit Code: ' . $exitCode;
-
-    } catch (\Throwable $e) {
-        return 'ERROR: ' . $e->getMessage() . ' LINE: ' . $e->getLine();
-    }
-});
-Route::get('/clear-cache', function () {
-    Artisan::call('route:clear');
-    Artisan::call('config:clear');
-    return 'Cache cleared';
-});
-
-// LAST me hi hona chahiye
 Route::get('/{slug}', [WaLinkController::class, 'redirect'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('wa-links.redirect');
-
-
-
-    
