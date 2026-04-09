@@ -186,9 +186,7 @@ Route::get('/home', function () {
 // ===================================================
 // ✅ TEST ROUTES (upar hone chahiye)
 Route::get('/test-backup', function () {
-    \Log::info('Backup route hit at: ' . now());
-    Artisan::call('backup:database');
-    return 'Backup run successfully!';
+    return 'Route working';
 });
 
 Route::get('/clear-cache', function () {
