@@ -1,31 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\WaLinkController;
+use App\Http\Controllers\CallLinkController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CallLinkController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\WaLinkController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
+use Log;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/test-backup', function () {
-    \Log::info('Backup route hit at: ' . now());
-    Artisan::call('backup:database');
-    return 'Backup run successfully!';
-});
 
-Route::get('/clear-cache', function () {
-    Artisan::call('route:clear');
-    Artisan::call('config:clear');
-    return 'Cache cleared';
-});
 // ===================================================
 // 1️⃣ AUTH ROUTES (Must be FIRST, before slug route)
 // ===================================================
@@ -191,11 +183,23 @@ Route::get('/home', function () {
 // ===================================================
 // 8️⃣ CATCH-ALL SLUG (ALWAYS LAST!)
 // ===================================================
+// ✅ TEST ROUTES (upar hone chahiye)
+Route::get('/test-backup', function () {
+    \Log::info('Backup route hit at: ' . now());
+    Artisan::call('backup:database');
+    return 'Backup run successfully!';
+});
+
+Route::get('/clear-cache', function () {
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    return 'Cache cleared';
+});
+
+// LAST me hi hona chahiye
 Route::get('/{slug}', [WaLinkController::class, 'redirect'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('wa-links.redirect');
-
-
 
 
 
