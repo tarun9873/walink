@@ -8,9 +8,10 @@ use App\Http\Controllers\PricingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\WaLinkController;
+
+
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Log;
 
 /*
 |--------------------------------------------------------------------------
