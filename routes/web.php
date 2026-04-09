@@ -188,10 +188,13 @@ Route::get('/home', function () {
 Route::get('/test-backup', function () {
     try {
         \Log::info('Backup route hit at: ' . now());
-        \Artisan::call('backup:database');
-        return 'Backup run successfully!';
-    } catch (\Exception $e) {
-        return 'ERROR: ' . $e->getMessage();
+
+        $exitCode = \Artisan::call('backup:database');
+
+        return 'DONE. Exit Code: ' . $exitCode;
+
+    } catch (\Throwable $e) {
+        return 'ERROR: ' . $e->getMessage() . ' LINE: ' . $e->getLine();
     }
 });
 Route::get('/clear-cache', function () {
