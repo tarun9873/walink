@@ -187,9 +187,17 @@ Route::get('/{slug}', [WaLinkController::class, 'redirect'])
 
 
 
-    use Illuminate\Support\Facades\Artisan;
+ use Illuminate\Support\Facades\Artisan;
 
 Route::get('/test-backup', function () {
+    \Log::info('Backup route hit at: ' . now());
     Artisan::call('backup:database');
     return 'Backup run successfully!';
+});
+
+
+Route::get('/clear-cache', function () {
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    return 'Cache cleared';
 });
