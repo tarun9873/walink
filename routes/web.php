@@ -36,7 +36,7 @@ Route::get('/privacy-policy', function () {
     return view('pricing.privacy');
 })->name('privacy-policy');
 
-Route::get('/link-not-found', [WaLinkController::class, 'notfound'])->name('wa-links.notfound');
+// Route::get('/link-not-found', [WaLinkController::class, 'notfound'])->name('wa-links.notfound');
 
 // ===================================================
 // 3️⃣ USER DASHBOARD (Auth required)
