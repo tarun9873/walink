@@ -56,7 +56,7 @@ class BackupDatabase extends Command
 
     // Send Mail
     \Mail::raw('Database backup attached.', function ($message) use ($zip_file, $date) {
-      $message->to('your@email.com')
+      $message->to('ak3400988@gmail.com')
         ->subject("Backup - $date")
         ->attach($zip_file);
     });
