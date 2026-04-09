@@ -23,20 +23,20 @@
     <link rel="canonical" href="@yield('canonical', url()->current())">
 
     <!-- Google Search Console -->
-    <meta name="google-site-verification" content="nUEk5nKNRKQ_5AgeX7tsxFdPsnOc6miWZu81C-BXLz4">
+    <meta name="google-site-verification" content="9MP9Zx2XFOdXfpqkqB18JMzQvZJ08822yAXQzGP7pBA" />
 
     <!-- 🔥 OPEN GRAPH -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="wa.link Alternative – Create WhatsApp Link Free">
     <meta property="og:description" content="Free wa.link alternative to create WhatsApp links, wa.me URLs and QR codes without login.">
-    <meta property="og:image" content="https://walive.link/assets/og-image.png">
+    <meta property="og:image" content="https://wa-app.link/assets/og-image.png">
     <meta property="og:url" content="{{ url()->current() }}">
 
     <!-- 🔥 TWITTER -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="wa.link Alternative – WhatsApp Link Generator">
     <meta name="twitter:description" content="Create WhatsApp links & QR codes free. Best wa.link alternative online.">
-    <meta name="twitter:image" content="https://walive.link/assets/og-image.png">
+    <meta name="twitter:image" content="https://wa-app.link/assets/og-image.png">
 
     <!-- 🔥 FAVICON -->
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">

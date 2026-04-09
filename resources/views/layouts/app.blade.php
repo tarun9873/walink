@@ -84,7 +84,7 @@
 "description":"Create WhatsApp short links, custom messages, and QR codes instantly. A perfect alternative to wa.link."
 }
 </script>
-    <meta name="google-site-verification" content="9MP9Zx2XFOdXfpqkqB18JMzQvZJ08822yAXQzGP7pBA" />
+    
     <!-- Modern UI Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
