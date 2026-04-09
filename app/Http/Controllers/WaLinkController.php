@@ -45,56 +45,56 @@ class WaLinkController extends Controller
      * List links for logged-in user (paginated)
      */
     public function index(Request $request)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    // ================= SUBSCRIPTION =================
-    $subscription = Subscription::where('user_id', $user->id)
-        ->where('status', 'active')
-        ->where('expires_at', '>', now())
-        ->with('plan')
-        ->first();
+        // ================= SUBSCRIPTION =================
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->with('plan')
+            ->first();
 
-    // ================= REMAINING LINKS =================
-    $remainingLinks = $user->remaining_links ?? 0;
+        // ================= REMAINING LINKS =================
+        $remainingLinks = $user->remaining_links ?? 0;
 
-    // ================= LINKS QUERY =================
-    $query = $user->waLinks()
-        ->select(
-            'id',
-            'name',
-            'slug',
-            'phone',
-            'message',
-            'clicks',
-            'is_active',
-            'created_at'
-        );
+        // ================= LINKS QUERY =================
+        $query = $user->waLinks()
+            ->select(
+                'id',
+                'name',
+                'slug',
+                'phone',
+                'message',
+                'clicks',
+                'is_active',
+                'created_at'
+            );
 
-    // 🔍 SEARCH FILTER (NAME + URL/SLUG ONLY)
-    if ($request->filled('search')) {
-        $search = $request->search;
+        // 🔍 SEARCH FILTER (NAME + URL/SLUG ONLY)
+        if ($request->filled('search')) {
+            $search = $request->search;
 
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('slug', 'like', "%{$search}%");
-        });
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        // ================= PAGINATION =================
+        $links = $query
+            ->latest()
+            ->paginate(15)
+            ->withQueryString(); // 🔥 search pagination fix
+
+        return view('wa_links.index', compact(
+            'links',
+            'subscription',
+            'remainingLinks'
+        ));
     }
 
-    // ================= PAGINATION =================
-    $links = $query
-        ->latest()
-        ->paginate(15)
-        ->withQueryString(); // 🔥 search pagination fix
 
-    return view('wa_links.index', compact(
-        'links',
-        'subscription',
-        'remainingLinks'
-    ));
-}
-
-    
 
     /**
      * Show create form
@@ -234,14 +234,23 @@ class WaLinkController extends Controller
     /**
      * Edit form
      */
-public function edit(WaLink $waLink)
-{
-    dd([
-    'login_user' => auth()->id(),
-    'link_id' => $waLink->id,
-    'link_user' => $waLink->user_id,
-]);
-}
+    public function edit(WaLink $waLink)
+    {
+        $hasActivePlan = Subscription::where('user_id', auth()->id())
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
+
+        if (!$hasActivePlan) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Your subscription has expired.');
+        }
+
+        $this->authorize('update', $waLink);
+
+        $remainingLinks = auth()->user()->remaining_links;
+        return view('wa_links.edit', compact('waLink', 'remainingLinks'));
+    }
 
 
     /**
@@ -249,15 +258,15 @@ public function edit(WaLink $waLink)
      */
     public function update(Request $request, WaLink $waLink)
     {
-      $hasActivePlan = Subscription::where('user_id', auth()->id())
-        ->where('status', 'active')
-        ->where('expires_at', '>', now())
-        ->exists();
+        $hasActivePlan = Subscription::where('user_id', auth()->id())
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
 
-    if (!$hasActivePlan) {
-        return redirect()->route('dashboard')
-            ->with('error','Your subscription has expired.');
-    }
+        if (!$hasActivePlan) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Your subscription has expired.');
+        }
         $this->authorize('update', $waLink);
 
         $request->validate([
@@ -305,16 +314,16 @@ public function edit(WaLink $waLink)
      */
     public function destroy(WaLink $waLink)
     {
-          $hasActivePlan = Subscription::where('user_id', auth()->id())
-        ->where('status', 'active')
-        ->where('expires_at', '>', now())
-        ->exists();
+        $hasActivePlan = Subscription::where('user_id', auth()->id())
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
 
-    if (!$hasActivePlan) {
-        return redirect()->route('dashboard')
-            ->with('error','Your subscription has expired.');
-    }
-    
+        if (!$hasActivePlan) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Your subscription has expired.');
+        }
+
         $this->authorize('delete', $waLink);
         $waLink->delete();
         return redirect()->route('wa-links.index')->with('success', 'Link deleted successfully!');
@@ -323,43 +332,42 @@ public function edit(WaLink $waLink)
     /**
      * Public redirect by slug — friendly handling for missing/inactive
      */
-  public function redirect($slug)
-{
-    try {
-        $link = WaLink::where('slug', $slug)->first();
+    public function redirect($slug)
+    {
+        try {
+            $link = WaLink::where('slug', $slug)->first();
 
-        if (!$link || ! $link->is_active) {
-            Log::info("Missing or inactive link visited: {$slug}", ['ip' => request()->ip()]);
+            if (!$link || ! $link->is_active) {
+                Log::info("Missing or inactive link visited: {$slug}", ['ip' => request()->ip()]);
+                return redirect()->route('wa-links.notfound');
+            }
+
+            // 🔴 CHECK USER SUBSCRIPTION
+            $hasActivePlan = Subscription::where('user_id', $link->user_id)
+                ->where('status', 'active')
+                ->where('expires_at', '>', now())
+                ->exists();
+
+            if (!$hasActivePlan) {
+                return response()->view('wa_links.link_expired', [], 403);
+            }
+
+            // Track click
+            $this->trackClick($link);
+
+            // increment clicks
+            $link->increment('clicks');
+
+            return redirect()->away($link->full_url);
+        } catch (\Throwable $e) {
+            Log::error("Error redirecting slug {$slug}: " . $e->getMessage(), [
+                'slug' => $slug,
+                'ip' => request()->ip()
+            ]);
+
             return redirect()->route('wa-links.notfound');
         }
-
-        // 🔴 CHECK USER SUBSCRIPTION
-        $hasActivePlan = Subscription::where('user_id', $link->user_id)
-            ->where('status', 'active')
-            ->where('expires_at', '>', now())
-            ->exists();
-
-        if (!$hasActivePlan) {
-            return response()->view('wa_links.link_expired', [], 403);
-        }
-
-        // Track click
-        $this->trackClick($link);
-
-        // increment clicks
-        $link->increment('clicks');
-
-        return redirect()->away($link->full_url);
-
-    } catch (\Throwable $e) {
-        Log::error("Error redirecting slug {$slug}: " . $e->getMessage(), [
-            'slug' => $slug,
-            'ip' => request()->ip()
-        ]);
-
-        return redirect()->route('wa-links.notfound');
     }
-}
 
 
     /**
