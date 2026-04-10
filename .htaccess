@@ -5,7 +5,7 @@
     # Redirect www to non-www and enforce HTTPS
     RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
     RewriteCond %{HTTPS} off
-    RewriteRule ^ hhttps://khiladi2026.in/%{REQUEST_URI} [L,R=301,NE]
+    RewriteRule ^ https://wa-app.link/%{REQUEST_URI} [L,R=301,NE]
 
     # Handle Laravel routing
     RewriteCond %{REQUEST_URI} !^public
